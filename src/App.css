@@ -1,0 +1,70 @@
+/* src/App.css */
+body, html {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent scrolling */
+  background-color: #1e1e1e; /* Dark background */
+}
+
+.app-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+.diagram-wrapper {
+  position: relative;
+  /* 'inline-flex' ensures the div shrinks to fit the image size exactly. 
+     If it stays block-level, it might be wider than the image, 
+     breaking your % coordinates. */
+  display: inline-flex; 
+  line-height: 0; /* Removes potential vertical gap under the image */
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+.diagram-image {
+  /* This ensures the image never exceeds the screen size */
+  max-width: 100vw;
+  max-height: 100vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.indicator-box {
+  position: absolute;
+  transform: translate(-50%, -50%); /* Centers the indicator on the coordinate */
+  background-color: rgba(0, 0, 0, 0.85);
+  border: 1px solid #00ff00;
+  color: #00ff00; /* Цвет цифр */
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+  /* Prevent indicators from wrapping awkwardly on small screens */
+  white-space: nowrap; 
+  pointer-events: none; /* Let clicks pass through to the image if needed */
+  z-index: 10;
+}
+
+.indicator-value {
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.indicator-unit {
+  font-size: 1.4rem;
+  color: #aaa;
+  margin-left: 4px;
+}
+
+.indicator-label {
+  font-size: 1.2rem;
+  color: #ccc;
+  text-transform: uppercase;
+  margin-top: 2px;
+  display: block;
+}

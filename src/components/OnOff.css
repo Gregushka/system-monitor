@@ -1,0 +1,41 @@
+/* Base circle shape */
+.onoff-indicator {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  
+  width: 40px;
+  height: 40px;
+  border-radius: 50%; /* Makes it a perfect circle */
+  
+  border: 2px solid #333; /* Dark rim around the light */
+  box-shadow: 0 0 5px rgba(0,0,0,0.8);
+  z-index: 10;
+  transition: background-color 0.3s ease; /* Smooth transition when color changes */
+}
+
+/* Color definitions */
+.light-green {
+  background-color: #00ff00;
+  box-shadow: 0 0 10px #00ff00; /* Glowing effect */
+}
+
+.light-red {
+  background-color: #ff0000;
+  box-shadow: 0 0 10px #ff0000;
+}
+
+.light-white {
+  background-color: #f0f0f0;
+  box-shadow: 0 0 10px #ffffff;
+}
+
+/* "Glare" reflection to make it look like a glass bulb */
+.onoff-glare {
+  position: absolute;
+  top: 15%;
+  left: 20%;
+  width: 25%;
+  height: 25%;
+  background-color: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+}
