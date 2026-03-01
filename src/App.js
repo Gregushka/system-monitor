@@ -21,8 +21,8 @@ import SensorsPanel   from './components/SensorsPanel';
 
 // ─── Background definitions ───────────────────────────────────────────────────
 export const BACKGROUNDS = [
-  { id: 'diagram1', label: 'Diagram 1', backgroundImage: process.env.PUBLIC_URL + '/backgrounds/diagram1.png', backgroundColor: '#0d1b2a' },
-  { id: 'diagram2', label: 'Diagram 2', backgroundImage: process.env.PUBLIC_URL + '/backgrounds/diagram2.png', backgroundColor: '#0d1b2a' },
+  { id: 'diagram1', label: 'Насосы', backgroundImage: process.env.PUBLIC_URL + '/backgrounds/diagram1.png', backgroundColor: '#0d1b2a' },
+  { id: 'diagram2', label: 'Горелки', backgroundImage: process.env.PUBLIC_URL + '/backgrounds/diagram2.png', backgroundColor: '#0d1b2a' },
 ];
 
 // ─── Role helpers ─────────────────────────────────────────────────────────────
@@ -155,9 +155,9 @@ export default function App() {
 
   const tabs = [
     ...BACKGROUNDS.map((b) => ({ id: b.id, label: b.label, type: 'diagram' })),
-    { id: '__settings__', label: '⚙ Settings', type: 'settings' },
-    ...(isAdmin(session.role)    ? [{ id: '__users__',   label: '👤 Users',   type: 'users'   }] : []),
-    ...(isAlmighty(session.role) ? [{ id: '__sensors__', label: '📡 Sensors', type: 'sensors' }] : []),
+    { id: '__settings__', label: '⚙ Настройки', type: 'settings' },
+    ...(isAdmin(session.role)    ? [{ id: '__users__',   label: '👤 Пользователи',   type: 'users'   }] : []),
+    ...(isAlmighty(session.role) ? [{ id: '__sensors__', label: '📡 Датчики', type: 'sensors' }] : []),
   ];
 
   const activeBg       = BACKGROUNDS.find((b) => b.id === activeTab);
