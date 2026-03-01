@@ -45,6 +45,7 @@ export default function App() {
   const [activeTab,       setActiveTab]        = useState(BACKGROUNDS[0].id);
   const [settings,        setSettings]         = useState(loadSettings);
   const [sensorValues,    setSensorValues]      = useState({});
+  const [hasPolled,       setHasPolled]        = useState(false);   // true after ≥1 successful poll
   const [footerMessages,  setFooterMessages]   = useState([]);
   const [footerStatus,    setFooterStatus]     = useState({ status: 0, text: 'Waiting…' });
   const [allSensors,      setAllSensors]       = useState([]);
@@ -70,6 +71,7 @@ export default function App() {
     clearSession();
     setSession(null);
     setSensorValues({});
+    setHasPolled(false);
     setFooterMessages([]);
     if (pollTimer.current) clearInterval(pollTimer.current);
   }, []);
@@ -85,6 +87,7 @@ export default function App() {
 
     setFooterStatus({ status: hdr.status ?? 0, text: hdr.status_text || '—' });
     setSensorValues(buildValuesFromApiData(data));
+    setHasPolled(true);
 
     if (data.length > 0) {
       const tsMs = (data[0].ts || 0) * 1000;
@@ -170,7 +173,7 @@ export default function App() {
       />
       <div className="app-main">
         {activeTabType === 'diagram' && activeBg && (
-          <BackgroundView background={activeBg} values={sensorValues} />
+          <BackgroundView background={activeBg} values={sensorValues} hasPolled={hasPolled} />
         )}
         {activeTabType === 'settings' && (
           <SettingsPanel settings={settings} onSaved={handleSettingsSaved} isAdmin={isAdmin(session.role)} />

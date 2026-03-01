@@ -30,7 +30,7 @@ const INDICATOR_MAP = {
   TempIndicator:      TempIndicator,
 };
 
-export default function BackgroundView({ background, values }) {
+export default function BackgroundView({ background, values, hasPolled }) {
   const indicators = getIndicatorsForBg(background.id);
 
   const bgStyle = {
@@ -47,9 +47,14 @@ export default function BackgroundView({ background, values }) {
         const Component = INDICATOR_MAP[cfg._type];
         if (!Component) return null;
 
-        // ind_id NOT in received values → hide entirely
-        // ind_id in values but value === null → pass null (component shows OFFLINE)
-        if (!(cfg.ind_id in values)) return null;
+        // Before the first poll every defined indicator is shown as OFFLINE (null).
+        // After the first poll: if ind_id was not included in the API response at
+        // all, hide the indicator completely per spec.  If it was included but has
+        // no value, the component itself shows "OFFLINE".
+        if (hasPolled && !(cfg.ind_id in values)) return null;
+
+        // Resolve value: use received value, or null (→ OFFLINE) when not yet polled
+        const value = cfg.ind_id in values ? values[cfg.ind_id] : null;
 
         const posStyle = {
           position: 'absolute',
@@ -60,7 +65,7 @@ export default function BackgroundView({ background, values }) {
 
         return (
           <div key={cfg.ind_id} style={posStyle}>
-            <Component config={cfg} value={values[cfg.ind_id]} />
+            <Component config={cfg} value={value} />
           </div>
         );
       })}
