@@ -1,0 +1,60 @@
+.di-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid #3a5a7a;
+  border-radius: 4px;
+  padding: 4px 8px 6px;
+  min-width: 110px;
+  backdrop-filter: blur(2px);
+  box-shadow: 0 0 8px rgba(0, 150, 255, 0.15);
+  user-select: none;
+}
+
+.di-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: #7ec8e3;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 2px;
+  white-space: nowrap;
+}
+
+.di-display {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--mono);
+}
+
+.di-value {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  /* default: green; overridden by threshold classes below */
+  color: #39ff14;
+  text-shadow: 0 0 6px #39ff1488;
+  transition: color 0.4s, text-shadow 0.4s;
+}
+
+.di-value--offline {
+  font-size: 11px !important;
+  letter-spacing: 0.18em;
+  color: #445566 !important;
+  text-shadow: none !important;
+}
+
+/* Threshold colour states — applied by DigitalIndicator.js */
+.di-value--high { color: #ff4444 !important; text-shadow: 0 0 6px #ff444488 !important; }
+.di-value--low  { color: #ffaa00 !important; text-shadow: 0 0 6px #ffaa0088 !important; }
+
+.di-unit {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #8899aa;
+}
+
