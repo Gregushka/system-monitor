@@ -1,0 +1,29 @@
+.rsi-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+}
+
+.rsi-lamp {
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.12);
+  transition: background 0.4s, box-shadow 0.4s;
+  animation: rsi-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes rsi-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.82; }
+}
+
+.rsi-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-label);
+  text-align: center;
+  letter-spacing: 0.08em;
+  max-width: 110px;
+  word-break: break-word;
+}
