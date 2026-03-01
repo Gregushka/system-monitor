@@ -1,24 +1,21 @@
 /* ─── Global reset & root ─────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap');
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg-deep:    #080e14;
-  --bg-panel:   #0d1820;
-  --bg-card:    #111e2b;
-  --border:     #1e3248;
-  --border-bright: #2e5580;
-  --accent:     #00b4d8;
-  --accent2:    #0af;
-  --text-main:  #c8d8e8;
-  --text-dim:   #4a6880;
-  --text-label: #7a9ab8;
-  --green:      #00e676;
-  --amber:      #ffab00;
-  --red:        #ff1744;
-  --mono:       'Share Tech Mono', 'Courier New', monospace;
-  --sans:       'Rajdhani', sans-serif;
+  --bg-deep:       #0d0d0d;
+  --bg-panel:      #111;
+  --bg-card:       #1a2a3a;
+  --border:        #333;
+  --border-bright: #3a5a7a;
+  --accent:        #7ec8e3;
+  --text-main:     #e0e0e0;
+  --text-dim:      #aaa;
+  --text-label:    #7ec8e3;
+  --green:         #39ff14;
+  --amber:         #ffaa00;
+  --red:           #ff4444;
+  --mono:          'Courier New', Courier, monospace;
+  --sans:          'Courier New', Courier, monospace;
 }
 
 html, body, #root {
@@ -27,7 +24,7 @@ html, body, #root {
   overflow: hidden;
   background: var(--bg-deep);
   color: var(--text-main);
-  font-family: var(--sans);
+  font-family: var(--mono);
 }
 
 /* ─── App shell ──────────────────────────────────────────────────────────── */

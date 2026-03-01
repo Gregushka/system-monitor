@@ -24,11 +24,12 @@ export default function DigitalIndicator({ config, value }) {
   const isOffline = value === null || value === undefined;
   const numVal    = isOffline ? null : parseFloat(value);
 
-  // Default threshold colouring (override with config.color)
-  let valueColor = color || '#00e676';
-  if (!color && !isOffline) {
-    if (numVal > 90 || numVal < 5) valueColor = '#ff1744';
-    else if (numVal > 75 || numVal < 15) valueColor = '#ffab00';
+  // Threshold class — CSS handles the actual colours (green default, amber low, red high)
+  // Override entirely if config.color is set (inline style wins over class)
+  let thresholdClass = '';
+  if (!isOffline && !color) {
+    if (numVal > 90 || numVal < 5) thresholdClass = 'di-value--high';
+    else if (numVal > 75 || numVal < 15) thresholdClass = 'di-value--low';
   }
 
   const displayText = isOffline
@@ -40,8 +41,8 @@ export default function DigitalIndicator({ config, value }) {
       <div className="di-label">{label}</div>
       <div className="di-display">
         <span
-          className={`di-value${isOffline ? ' di-value--offline' : ''}`}
-          style={{ fontSize, color: isOffline ? '#445566' : valueColor }}
+          className={`di-value${isOffline ? ' di-value--offline' : ''}${thresholdClass ? ' ' + thresholdClass : ''}`}
+          style={{ fontSize, ...(color && !isOffline ? { color, textShadow: `0 0 6px ${color}88` } : {}) }}
         >
           {displayText}
         </span>
