@@ -27,9 +27,20 @@ const STATES = {
 
 function resolveState(value) {
   if (value === null || value === undefined) return 'offline';
-  if (value === 0 || value === 'grey'  || value === 'stopped') return 'grey';
-  if (value === 1 || value === 'green' || value === 'running') return 'green';
-  if (value === 2 || value === 'red'   || value === 'fault')   return 'red';
+  // Explicit string states
+  if (value === 'grey'  || value === 'stopped') return 'grey';
+  if (value === 'green' || value === 'running') return 'green';
+  if (value === 'red'   || value === 'fault')   return 'red';
+  // Numeric convention from this API:
+  //   0        → stopped (grey)
+  //   positive → running (green)
+  //   negative → fault/alarm (red)
+  const n = Number(value);
+  if (!isNaN(n)) {
+    if (n > 0)  return 'green';
+    if (n < 0)  return 'red';
+    return 'grey';
+  }
   return 'grey';
 }
 

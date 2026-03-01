@@ -22,7 +22,12 @@ export default function OnOffIndicator({ config, value }) {
   const { label = '', radius = 28, color = '#00e676' } = config;
 
   const isOffline = value === null || value === undefined;
-  const isOn      = !isOffline && value !== 0 && value !== false && value !== 'off' && value !== '0';
+  const numVal    = Number(value);
+  // Any non-zero number = ON; zero = OFF; explicit string aliases supported
+  const isOn = !isOffline && value !== 0 && value !== false &&
+               value !== 'off' && value !== '0' &&
+               !(typeof value === 'number' && value === 0) &&
+               !(typeof value === 'string' && Number(value) === 0);
 
   const size = radius * 2;
 

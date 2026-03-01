@@ -4,20 +4,19 @@
  * Edit this file to add, move, or remove indicators on any background.
  *
  * Rules:
- *  • ind_id   must match the "name" field returned by /sensor and /read_data
- *  • bg_id    must match one of the background keys defined in BACKGROUNDS (App.js)
+ *  • ind_id   MUST exactly match the "name" field returned by /read_data
+ *  • bg_id    must match one of the background keys in BACKGROUNDS (App.js)
  *  • top/left are in the range 0–2000  (0 = top/left edge, 2000 = bottom/right edge)
  *
- * Import the *Create helpers you need; unused ones can be omitted.
+ * Actual ind_ids returned by this installation's /read_data:
+ *   di-temp, di-pressure, pump1, pump2, pds1   → background: diagram1
+ *   di-flow, pump1-d2, di-vol, pds2            → background: diagram2
  */
 
 import {
   DigitalIndicatorCreate,
   OnOffIndicatorCreate,
   PumpIndicatorCreate,
-  GasBurnerIndicatorCreate,
-  GasFlapIndicatorCreate,
-  TempIndicatorCreate,
 } from './indicatorRegistry';
 
 // ─── Diagram 1 ────────────────────────────────────────────────────────────────
@@ -25,60 +24,50 @@ import {
 DigitalIndicatorCreate({
   ind_id:   'di-temp',
   bg_id:    'diagram1',
-  label:    'Boiler Temp',
+  label:    'Temperature',
   unit:     '°C',
-  top:      220,
-  left:     120,
+  top:      300,
+  left:     200,
   fontSize: 26,
 });
 
 DigitalIndicatorCreate({
   ind_id:   'di-pressure',
   bg_id:    'diagram1',
-  label:    'Boiler P',
+  label:    'Pressure',
   unit:     'bar',
-  top:      220,
-  left:     500,
+  top:      300,
+  left:     600,
   fontSize: 26,
   color:    '#00ffff',
 });
 
 PumpIndicatorCreate({
-  ind_id: 'pump-main',
+  ind_id: 'pump1',
   bg_id:  'diagram1',
   label:  'PumpOne',
-  top:    550,
-  left:   200,
+  top:    700,
+  left:   300,
   size:   90,
 });
 
 PumpIndicatorCreate({
-  ind_id: 'pump-feed',
+  ind_id: 'pump2',
   bg_id:  'diagram1',
   label:  'PumpTwo',
-  top:    550,
-  left:   600,
+  top:    700,
+  left:   700,
   size:   90,
 });
 
-GasBurnerIndicatorCreate({
-  ind_id: 'burner-main',
+OnOffIndicatorCreate({
+  ind_id: 'pds1',
   bg_id:  'diagram1',
-  label:  'Main Burner',
-  top:    400,
+  label:  'PDS 1',
+  top:    500,
   left:   900,
-  size:   80,
-});
-
-GasFlapIndicatorCreate({
-  ind_id:        'flap-exhaust',
-  bg_id:         'diagram1',
-  label:         'Exhaust Flap',
-  top:           700,
-  left:          900,
-  size:          80,
-  labelChimney:  'CHIMNEY',
-  labelBypass:   'BYPASS',
+  radius: 36,
+  color:  '#00e676',
 });
 
 // ─── Diagram 2 ────────────────────────────────────────────────────────────────
@@ -88,44 +77,36 @@ DigitalIndicatorCreate({
   bg_id:    'diagram2',
   label:    'Flow Rate',
   unit:     'm³/h',
-  top:      180,
-  left:     700,
-  fontSize: 24,
+  top:      300,
+  left:     600,
+  fontSize: 26,
+});
+
+PumpIndicatorCreate({
+  ind_id: 'pump1-d2',
+  bg_id:  'diagram2',
+  label:  'PumpOne',
+  top:    600,
+  left:   400,
+  size:   90,
+});
+
+DigitalIndicatorCreate({
+  ind_id:   'di-vol',
+  bg_id:    'diagram2',
+  label:    'Volume',
+  unit:     'L',
+  top:      400,
+  left:     200,
+  fontSize: 26,
 });
 
 OnOffIndicatorCreate({
-  ind_id: 'valve-main',
+  ind_id: 'pds2',
   bg_id:  'diagram2',
-  label:  'Main Valve',
-  top:    450,
-  left:   300,
-  radius: 32,
-  color:  '#00ff41',
-});
-
-TempIndicatorCreate({
-  ind_id: 'temp-flue',
-  bg_id:  'diagram2',
-  label:  'Flue Temp',
-  top:    450,
-  left:   700,
-  size:   72,
-});
-
-TempIndicatorCreate({
-  ind_id: 'temp-ambient',
-  bg_id:  'diagram2',
-  label:  'Ambient',
-  top:    700,
-  left:   700,
-  size:   72,
-});
-
-GasBurnerIndicatorCreate({
-  ind_id: 'burner-pilot',
-  bg_id:  'diagram2',
-  label:  'Pilot Burner',
-  top:    700,
-  left:   300,
-  size:   72,
+  label:  'PDS 2',
+  top:    600,
+  left:   800,
+  radius: 36,
+  color:  '#00e676',
 });

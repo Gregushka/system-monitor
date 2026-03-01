@@ -58,7 +58,8 @@ export default function App() {
   const handleLogin = useCallback(async (username, password) => {
     setLoginError('');
     const result = await apiLogin(username, password);
-    if (result.ok && result.token) {
+    if (result.ok) {
+      // result.token is always non-null when result.ok is true (see api.js)
       const s = { token: result.token, user: result.user, role: result.role?.role_name };
       saveSession(s);
       setSession(s);

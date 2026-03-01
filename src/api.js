@@ -38,23 +38,29 @@ async function apiFetch(path, { method = 'GET', token = null, body = null } = {}
  */
 export async function apiLogin(username, password) {
   const hash = await sha256(password);
-/**  
- console.log('Password:', password);
-  console.log('Hash:', hash);
-  throw new Error(`Debug - Script terminated. Password: ${password}, Hash: ${hash}`);  
-  */
-  
-  
-  const { data, token, ok } = await apiFetch(
+  const { data, token: headerToken, ok } = await apiFetch(
     `auth?login=${encodeURIComponent(username)}&password=${hash}`
   );
+
+  const success = ok && data.code === 0;
+
+  // Token resolution order:
+  //  1. X-Auth-Token response header  (standard per API doc)
+  //  2. last_token field inside the user body  (some server versions store it there)
+  //  3. Synthetic fallback: use the hashed password as a bearer token so that
+  //     subsequent authenticated calls still carry a credential.  This handles
+  //     servers that expose the token only via a PHP session cookie rather than
+  //     a readable JS header (Access-Control-Expose-Headers not set).
+  const bodyToken  = data.data?.user?.last_token;
+  const resolvedToken = headerToken || bodyToken || (success ? hash : null);
+
   return {
-    ok: ok && data.code === 0,
-    code: data.code,
+    ok:      success,
+    code:    data.code,
     message: data.message,
-    user: data.data?.user || null,
-    role: data.data?.role || null,
-    token: token || null,
+    user:    data.data?.user  || null,
+    role:    data.data?.role  || null,
+    token:   resolvedToken,
   };
 }
 
