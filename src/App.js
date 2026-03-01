@@ -82,9 +82,10 @@ export default function App() {
     if (!response) return;
     const { hdr = {}, data = [] } = response;
 
-    if (hdr.bg_id && BACKGROUNDS.some((b) => b.id === hdr.bg_id)) {
-      setActiveTab((prev) => prev !== hdr.bg_id ? hdr.bg_id : prev);
-    }
+    // bg_id switching temporarily disabled — tab is controlled by user only
+    // if (hdr.bg_id && BACKGROUNDS.some((b) => b.id === hdr.bg_id)) {
+    //   setActiveTab((prev) => prev !== hdr.bg_id ? hdr.bg_id : prev);
+    // }
 
     setFooterStatus({ status: hdr.status ?? 0, text: hdr.status_text || '—' });
     setSensorValues(buildValuesFromApiData(data));
