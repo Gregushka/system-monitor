@@ -59,9 +59,9 @@ PumpIndicatorCreate({
   ind_id: 'pump1',
   bg_id:  'diagram1',
   label:  'PumpOne',
-  top:    250,
+  top:    262,
   left:   895,
-  size:   90,
+  size:   60,
 });
 
 PumpIndicatorCreate({
@@ -70,7 +70,7 @@ PumpIndicatorCreate({
   label:  'PumpTwo',
   top:    200,
   left:   798,
-  size:   90,
+  size:   60,
 });
 /*
 OnOffIndicatorCreate({
