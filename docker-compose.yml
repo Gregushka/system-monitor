@@ -1,24 +1,15 @@
-version: '3.8'
 services:
   system-monitor:
-    image: system-monitor-system-monitor
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: system-monitor
+    restart: unless-stopped
     ports:
-    - 8500:80
-    - 8500:80
-    volumes: []
-    environment:
-    - NGINX_VERSION=1.29.4
-    - PKG_RELEASE=1
-    - DYNPKG_RELEASE=1
-    - NJS_VERSION=0.9.4
-    - NJS_RELEASE=1
-    - ACME_VERSION=0.3.1
-    deploy:
-      restart_policy:
-        condition: unless-stopped
-    logging:
-      driver: json-file
-      options: {}
+      - "8500:80"
     networks:
-    - system-monitor_webnet
+      - webnet
+
+networks:
+  webnet:
+    driver: bridge
