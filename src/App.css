@@ -15,7 +15,7 @@
   --amber:         #ffaa00;
   --red:           #ff4444;
   --mono:          'Courier New', Courier, monospace;
-  --sans:          'Courier New', Courier, monospace;
+  --footer-height: 160px;   /* ← change this one value to resize the footer */
 }
 
 html, body, #root {

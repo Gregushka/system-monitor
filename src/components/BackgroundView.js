@@ -3,6 +3,7 @@ import './css/BackgroundView.css';
 
 import { getIndicatorsForBg } from '../indicatorRegistry';
 import DigitalIndicator   from './DigitalIndicator';
+import DigitalRound       from './DigitalRound';
 import OnOffIndicator     from './OnOffIndicator';
 import PumpIndicator      from './PumpIndicator';
 import GasBurnerIndicator from './GasBurnerIndicator';
@@ -23,6 +24,7 @@ function toPercent(v) { return `${(v / 2000) * 100}%`; }
 
 const INDICATOR_MAP = {
   DigitalIndicator:   DigitalIndicator,
+  DigitalRound:       DigitalRound,
   OnOffIndicator:     OnOffIndicator,
   PumpIndicator:      PumpIndicator,
   GasBurnerIndicator: GasBurnerIndicator,
@@ -35,8 +37,8 @@ export default function BackgroundView({ background, values, hasPolled }) {
 
   const bgStyle = {
     backgroundImage:    background.backgroundImage ? `url(${background.backgroundImage})` : 'none',
-    backgroundColor:    background.backgroundColor || '#0d1820',
-    backgroundSize:     'cover',
+    backgroundColor:    background.backgroundColor || '#0d0d0d',
+    backgroundSize:     'contain',
     backgroundPosition: 'center',
     backgroundRepeat:   'no-repeat',
   };

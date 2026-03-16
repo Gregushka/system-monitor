@@ -1,0 +1,44 @@
+.dr-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  user-select: none;
+}
+
+.dr-svg {
+  display: block;
+  transition: filter 0.5s;
+}
+
+/* ── Text inside SVG is styled inline but these provide fallback ─ */
+.dr-value {
+  text-shadow: 0 0 8px rgba(200,230,255,0.4);
+}
+
+/* ── Meta row: label + unit below the circle ─────────────────── */
+.dr-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid #2a3a4a;
+  border-radius: 3px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.dr-label {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #7ec8e3;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.dr-unit {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: #8899aa;
+  letter-spacing: 0.06em;
+}

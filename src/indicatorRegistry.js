@@ -15,6 +15,7 @@
  * Indicator types
  * ───────────────
  *   DigitalIndicator   – numeric readout
+ *   DigitalRound       – circular numeric readout with coloured fill
  *   OnOffIndicator     – coloured bulb (on/off)
  *   PumpIndicator      – P&ID centrifugal pump symbol
  *   GasBurnerIndicator – burner flame with 6 operating modes
@@ -63,7 +64,29 @@ export function DigitalIndicatorUpdate(valuesMap, ind_id, value) {
   return { ...valuesMap, [ind_id]: value };
 }
 
-// ─── OnOffIndicator ───────────────────────────────────────────────────────────
+// ─── DigitalRound ─────────────────────────────────────────────────────────────
+/**
+ * DigitalRoundCreate(config)
+ *
+ * @param {string} config.ind_id      Unique sensor id (matches API name)
+ * @param {string} config.bg_id       Background id
+ * @param {string} config.label       Text shown below the circle (e.g. "Pressure")
+ * @param {string} [config.unit]      Measurement unit shown next to label (e.g. "bar")
+ * @param {number} config.top         Vertical position 0–2000
+ * @param {number} config.left        Horizontal position 0–2000
+ * @param {number} [config.radius]    Circle radius in px (default 48)
+ * @param {number} [config.fontSize]  Value font size in px (default radius * 0.42)
+ * @param {string} [config.defaultBg] Default circle fill colour (default '#0d1820')
+ *
+ * Value from API — two supported formats:
+ *   [number, cssColour]  e.g. [4.2, '#0a2a0a']   → value + explicit fill colour
+ *   number               e.g. 4.2                 → value, fill = config.defaultBg
+ *   null / undefined     → OFFLINE state
+ */
+export function DigitalRoundCreate(config) { _register('DigitalRound', config); }
+export function DigitalRoundUpdate(valuesMap, ind_id, value) {
+  return { ...valuesMap, [ind_id]: value };
+}
 /**
  * OnOffIndicatorCreate(config)
  *
