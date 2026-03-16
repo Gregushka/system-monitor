@@ -30,6 +30,7 @@
 
 // ─── Internal registry ────────────────────────────────────────────────────────
 const _registry = {};
+let   _seq      = 0;   // monotonic counter for unique internal keys
 
 // ─── Shared create helper ─────────────────────────────────────────────────────
 function _register(type, config) {
@@ -37,7 +38,10 @@ function _register(type, config) {
     console.error(`[Registry] Missing ind_id in ${type} definition`, config);
     return;
   }
-  _registry[config.ind_id] = { ...config, _type: type };
+  // Use a unique internal key so multiple indicators can bind to the same ind_id.
+  // The ind_id field is kept for value-map lookup; _key is only used internally.
+  const key = `${config.ind_id}::${_seq++}`;
+  _registry[key] = { ...config, _type: type, _key: key };
 }
 
 // ─── DigitalIndicator ─────────────────────────────────────────────────────────

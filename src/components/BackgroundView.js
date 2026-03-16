@@ -53,10 +53,13 @@ export default function BackgroundView({ background, values, hasPolled }) {
         // After the first poll: if ind_id was not included in the API response at
         // all, hide the indicator completely per spec.  If it was included but has
         // no value, the component itself shows "OFFLINE".
-        if (hasPolled && !(cfg.ind_id in values)) return null;
+        // data_id lets an indicator read from a different sensor than its own ind_id.
+        // This allows two indicators to display the same data feed side by side.
+        const dataKey = cfg.data_id || cfg.ind_id;
 
-        // Resolve value: use received value, or null (→ OFFLINE) when not yet polled
-        const value = cfg.ind_id in values ? values[cfg.ind_id] : null;
+        if (hasPolled && !(dataKey in values)) return null;
+
+        const value = dataKey in values ? values[dataKey] : null;
 
         const posStyle = {
           position: 'absolute',
@@ -66,7 +69,7 @@ export default function BackgroundView({ background, values, hasPolled }) {
         };
 
         return (
-          <div key={cfg.ind_id} style={posStyle}>
+          <div key={cfg._key} style={posStyle}>
             <Component config={cfg} value={value} />
           </div>
         );
