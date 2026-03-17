@@ -18,6 +18,8 @@ import {
   DigitalRoundCreate,
   OnOffIndicatorCreate,
   PumpIndicatorCreate,
+  GasBurnerIndicatorCreate,
+  GasFlapIndicatorCreate,
 } from './indicatorRegistry';
 
 // ─── Diagram 1 ────────────────────────────────────────────────────────────────
@@ -27,8 +29,8 @@ DigitalIndicatorCreate({
   bg_id:    'diagram1',
   label:    'Temperature',
   unit:     '°C',
-  top:      300,
-  left:     200,
+  top:      1270,
+  left:     1425,
   fontSize: 26,
 });
 
@@ -37,8 +39,8 @@ DigitalIndicatorCreate({
   bg_id:    'diagram1',
   label:    'Pressure',
   unit:     'bar',
-  top:      300,
-  left:     600,
+  top:      1270,
+  left:     1290,
   fontSize: 26,
   color:    '#00ffff',
 });
@@ -56,24 +58,35 @@ DigitalRoundCreate({
   defaultBg: '#0a1a2a',
 });
 
+DigitalIndicatorCreate({
+  ind_id:   'di-valve',
+  bg_id:    'diagram1',
+  label:    'Valve',
+  unit:     '%',
+  top:      750,
+  left:     1150,
+  fontSize: 26,
+  color:    '#00ffff',
+});
+
 PumpIndicatorCreate({
   ind_id: 'pump1',
   bg_id:  'diagram1',
   label:  'PumpOne',
-  top:    700,
-  left:   300,
-  size:   90,
+  top:    262,
+  left:   895,
+  size:   60,
 });
 
 PumpIndicatorCreate({
   ind_id: 'pump2',
   bg_id:  'diagram1',
   label:  'PumpTwo',
-  top:    700,
-  left:   700,
-  size:   90,
+  top:    200,
+  left:   798,
+  size:   60,
 });
-
+/*
 OnOffIndicatorCreate({
   ind_id: 'pds1',
   bg_id:  'diagram1',
@@ -83,9 +96,50 @@ OnOffIndicatorCreate({
   radius: 36,
   color:  '#00e676',
 });
-
+*/
 // ─── Diagram 2 ────────────────────────────────────────────────────────────────
 
+
+GasBurnerIndicatorCreate({
+  ind_id:   'burner_one',
+  bg_id:    'diagram2',
+  label:    'Burn',
+  top:      1850,
+  left:     120,
+  fontsize: 26,
+});
+
+GasBurnerIndicatorCreate({
+  ind_id:   'burner_two',
+  bg_id:    'diagram2',
+  label:    'Burn',
+  top:      1950,
+  left:     300,
+  fontsize: 26,
+});
+
+GasBurnerIndicatorCreate({
+  ind_id:   'burner_three',
+  bg_id:    'diagram2',
+  label:    'Burn',
+  top:      550,
+  left:     1150,
+  fontsize: 26,
+});
+
+GasFlapIndicatorCreate({
+  ind_id:   'burner_flap',
+  bg_id:    'diagram2',
+  label:    'Заслонка',
+  top:      1380,
+  left:     700,
+  fontsize: 26,
+  labelChimney: 'Выхлоп',
+  labelBypass: 'Мимо',
+  size: 100,
+});
+
+/*
 DigitalIndicatorCreate({
   ind_id:   'di-flow',
   bg_id:    'diagram2',
@@ -124,3 +178,4 @@ OnOffIndicatorCreate({
   radius: 36,
   color:  '#00e676',
 });
+*/
