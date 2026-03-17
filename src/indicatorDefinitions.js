@@ -33,7 +33,7 @@ DigitalIndicatorCreate({
   left:     1425,
   fontSize: 26,
 });
-
+/*
 DigitalIndicatorCreate({
   ind_id:   'di-pressure',
   bg_id:    'diagram1',
@@ -44,14 +44,14 @@ DigitalIndicatorCreate({
   fontSize: 26,
   color:    '#00ffff',
 });
-
+*/
 DigitalRoundCreate({
   ind_id:    'di-pressure-round',   // unique registry key
   data_id:   'di-pressure',         // which API name to read the value from
   bg_id:     'diagram1',
   label:     'Pressure',
   unit:      'bar',
-  top:       1400,
+  top:       1300,
   left:      1300,
   radius:    60,
   fontSize:  46,
