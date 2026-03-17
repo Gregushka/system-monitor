@@ -15,6 +15,7 @@
 
 import {
   DigitalIndicatorCreate,
+  DigitalRoundCreate,
   OnOffIndicatorCreate,
   PumpIndicatorCreate,
   GasBurnerIndicatorCreate,
@@ -42,6 +43,19 @@ DigitalIndicatorCreate({
   left:     1290,
   fontSize: 26,
   color:    '#00ffff',
+});
+
+DigitalRoundCreate({
+  ind_id:    'di-pressure-round',   // unique registry key
+  data_id:   'di-pressure',         // which API name to read the value from
+  bg_id:     'diagram1',
+  label:     'Pressure',
+  unit:      'bar',
+  top:       1400,
+  left:      1300,
+  radius:    60,
+  fontSize:  46,
+  defaultBg: '#0a1a2a',
 });
 
 DigitalIndicatorCreate({

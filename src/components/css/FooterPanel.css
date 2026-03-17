@@ -1,6 +1,6 @@
 .footer-root {
   flex-shrink: 0;
-  height: 25vh;
+  height: var(--footer-height);   /* ← set --footer-height in App.css :root */
   display: flex;
   align-items: stretch;
   background: #07101a;
