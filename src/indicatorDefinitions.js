@@ -52,9 +52,9 @@ DigitalRoundCreate({
   label:     'Pressure',
   unit:      'bar',
   top:       1300,
-  left:      1300,
-  radius:    60,
-  fontSize:  46,
+  left:      1250,
+  radius:    45,
+  fontSize:  30,
   defaultBg: '#0a1a2a',
 });
 
