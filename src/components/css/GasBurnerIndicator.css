@@ -1,31 +1,33 @@
-.burner-wrap {
+.gb-wrap {
   display: inline-flex;
   flex-direction: column;
-  align-items: center;
-  gap: 3px;
+  align-items: flex-start;
+  gap: 5px;
   user-select: none;
 }
 
-.burner-alarm {
-  animation: burner-blink 0.7s ease-in-out infinite;
+/* ── Meta row: label + percentage ───────────────────────────── */
+.gb-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 2px;
 }
 
-@keyframes burner-blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.65; }
-}
-
-.burner-label {
+.gb-label {
   font-family: var(--mono);
-  font-size: 10px;
-  color: var(--text-label);
-  background: rgba(7,16,26,0.75);
-  padding: 1px 6px;
-  border-radius: 2px;
+  font-size: 11px;
+  color: #8a9aa8;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.burner-mode {
+.gb-pct {
   font-family: var(--mono);
-  font-size: 9px;
-  letter-spacing: 0.14em;
+  font-size: 13px;
+  font-weight: 700;
+  min-width: 44px;
+  text-align: right;
+  letter-spacing: 0.04em;
+  transition: color 0.3s;
 }
