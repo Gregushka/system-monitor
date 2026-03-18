@@ -131,20 +131,25 @@ export function PumpIndicatorUpdate(valuesMap, ind_id, value) {
 /**
  * GasBurnerIndicatorCreate(config)
  *
- * Operating modes (value):
- *   0 | "off"       – Burner off            (dark circle, no flame)
- *   1 | "on"        – Burner on / normal    (orange flame)
- *   2 | "alarm"     – Alarm / failure       (red, exclamation)
- *   3 | "nodata"    – No data / comms lost  (grey, question mark)
- *   4 | "fullpower" – Full power            (bright yellow/white flame, wide)
- *   5 | "minpower"  – Minimum power         (small blue flame)
+ * Continuous flame indicator driven by a 0–100 % power value.
  *
  * @param {string} config.ind_id
  * @param {string} config.bg_id
  * @param {string} config.label
  * @param {number} config.top
  * @param {number} config.left
- * @param {number} [config.size]    Indicator size in px (default 72)
+ * @param {string} [config.burnerType]  "large" (default) | "small"
+ *                                        "large" – industrial register burner (wide body)
+ *                                        "small" – compact tube burner (narrow body)
+ * @param {number} [config.scale]       Uniform scale factor 0.5–2.0 (default 1.0)
+ *
+ * Value from API:
+ *   number 0–100   →  flame intensity %
+ *                     0       = off, no flame
+ *                     1–24    = low power, blue flame
+ *                     25–59   = mid power, orange flame
+ *                     60–100  = high power, yellow/white flame
+ *   null / undefined  →  OFFLINE (grey body, no flame)
  */
 export function GasBurnerIndicatorCreate(config) { _register('GasBurnerIndicator', config); }
 export function GasBurnerIndicatorUpdate(valuesMap, ind_id, value) {

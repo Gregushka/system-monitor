@@ -1,157 +1,275 @@
-import React from 'react';
+import React, { useId } from 'react';
 import './css/GasBurnerIndicator.css';
 
 /**
- * GasBurnerIndicator  –  gas burner symbol with 6 operating modes
+ * GasBurnerIndicator  –  continuous 0–100 % flame indicator
+ * ══════════════════════════════════════════════════════════
  *
- * Registry config fields:
- *   ind_id  {string}
- *   bg_id   {string}
- *   label   {string}
- *   top     {number}  0–2000
- *   left    {number}  0–2000
- *   size    {number}  overall size in px (default 72)
+ * Registry config fields (via GasBurnerIndicatorCreate):
+ *   ind_id      {string}            Sensor id — must match /read_data "name"
+ *   bg_id       {string}            Background id
+ *   label       {string}            Display label
+ *   top         {number}            0–2000 vertical position
+ *   left        {number}            0–2000 horizontal position
+ *   burnerType  {"large"|"small"}   Body style (default "large")
+ *                                     "large" — industrial register burner
+ *                                     "small" — compact tube burner
+ *   scale       {number}            Uniform scale factor (default 1.0)
  *
- * Value / mode mapping:
- *   0 | "off"       – Off            dark burner body, no flame
- *   1 | "on"        – On / normal    orange flame, running
- *   2 | "alarm"     – Alarm/Failure  red pulsing, ⚠ overlay
- *   3 | "nodata"    – No data        grey, question mark
- *   4 | "fullpower" – Full power     tall bright yellow/white flame
- *   5 | "minpower"  – Min power      small blue flame
- *   null            – OFFLINE        same as nodata style
+ * Value from API:
+ *   number 0–100   →  flame intensity percentage
+ *                     0   = off (no flame)
+ *                     1–24 = low  (blue flame)
+ *                     25–59 = mid  (orange flame)
+ *                     60–100 = high (yellow/white flame)
+ *   null / undefined  →  OFFLINE state (grey body, no flame, "OFFLINE" label)
  */
 
-function resolveMode(value) {
-  if (value === null || value === undefined) return 'nodata';
-  const map = {
-    0: 'off', off: 'off',
-    1: 'on',  on: 'on',
-    2: 'alarm', alarm: 'alarm',
-    3: 'nodata', nodata: 'nodata',
-    4: 'fullpower', fullpower: 'fullpower',
-    5: 'minpower', minpower: 'minpower',
-  };
-  return map[value] ?? 'nodata';
+// ─── Colour helpers ───────────────────────────────────────────────────────────
+function lerpColor(a, b, t) {
+  const pa  = [parseInt(a.slice(1,3),16), parseInt(a.slice(3,5),16), parseInt(a.slice(5,7),16)];
+  const pb  = [parseInt(b.slice(1,3),16), parseInt(b.slice(3,5),16), parseInt(b.slice(5,7),16)];
+  const r   = Math.round(pa[0] + (pb[0]-pa[0])*t);
+  const g   = Math.round(pa[1] + (pb[1]-pa[1])*t);
+  const bl  = Math.round(pa[2] + (pb[2]-pa[2])*t);
+  return `rgb(${r},${g},${bl})`;
 }
 
-// Flame SVG paths (relative to burner centre)
-function FlameShape({ cx, cy, r, mode }) {
-  if (mode === 'off' || mode === 'nodata') return null;
+function powerColor(power) {
+  if (power === 0)  return '#445566';
+  if (power < 25)   return '#42a5f5';
+  if (power < 60)   return '#ff9100';
+  return '#ffab00';
+}
 
-  const configs = {
-    on:        { h: r * 1.2, w: r * 0.55, color1: '#ff6d00', color2: '#ff9100', id: 'fl-on' },
-    fullpower: { h: r * 1.9, w: r * 0.72, color1: '#ffe000', color2: '#fff176', id: 'fl-fp' },
-    minpower:  { h: r * 0.65, w: r * 0.38, color1: '#1565c0', color2: '#42a5f5', id: 'fl-mp' },
-    alarm:     { h: r * 1.0, w: r * 0.5,  color1: '#d50000', color2: '#ff5252', id: 'fl-al' },
-  };
-  const c = configs[mode] || configs.on;
+// ─── Flame shape ──────────────────────────────────────────────────────────────
+function Flame({ x, y, power, maxLen, maxThick, uid }) {
+  if (power <= 0) return null;
 
-  const bx = cx, by = cy - r * 0.75;
-  const pts = `
-    ${bx},${by - c.h}
-    ${bx - c.w * 0.5},${by - c.h * 0.4}
-    ${bx - c.w * 0.3},${by}
-    ${bx + c.w * 0.3},${by}
-    ${bx + c.w * 0.5},${by - c.h * 0.4}
-  `;
+  const t      = power / 100;
+  const lenT   = Math.pow(t, 0.7);
+  const thickT = Math.pow(t, 0.6);
+  const len    = maxLen   * lenT;
+  const thick  = maxThick * thickT;
+  const halfT  = thick / 2;
+
+  let coreColor, midColor, outerColor, glowColor;
+  if (t < 0.25) {
+    coreColor  = lerpColor('#1565c0', '#42a5f5', t * 4);
+    midColor   = lerpColor('#0d47a1', '#1976d2', t * 4);
+    outerColor = lerpColor('#0a1929', '#1565c0', t * 4);
+    glowColor  = '#1565c0';
+  } else if (t < 0.6) {
+    const s    = (t - 0.25) / 0.35;
+    coreColor  = lerpColor('#42a5f5', '#ff9100', s);
+    midColor   = lerpColor('#1976d2', '#ff6d00', s);
+    outerColor = lerpColor('#1565c0', '#e65100', s);
+    glowColor  = lerpColor('#1565c0', '#ff6d00', s);
+  } else {
+    const s    = (t - 0.6) / 0.4;
+    coreColor  = lerpColor('#ff9100', '#fff9c4', s);
+    midColor   = lerpColor('#ff6d00', '#ffab00', s);
+    outerColor = lerpColor('#e65100', '#ff6d00', s);
+    glowColor  = lerpColor('#ff6d00', '#ffab00', s);
+  }
+
+  const gid      = `fg-${uid}`;
+  const fid      = `ff-${uid}`;
+  const tipX     = x + len;
+  const bulgeX   = x + len * 0.15;
+  const midX     = x + len * 0.45;
+
+  const path = `
+    M ${x},${y}
+    C ${bulgeX},${y - halfT * 1.05}  ${midX},${y - halfT * 0.7}  ${tipX},${y}
+    C ${midX},${y + halfT * 0.7}  ${bulgeX},${y + halfT * 1.05}  ${x},${y}
+    Z`;
+
+  const coreLen    = len * 0.55;
+  const coreTipX   = x + coreLen;
+  const coreHalfT  = halfT * 0.35;
+  const coreBulgeX = x + coreLen * 0.2;
+  const coreMidX   = x + coreLen * 0.5;
+
+  const corePath = `
+    M ${x},${y}
+    C ${coreBulgeX},${y - coreHalfT}  ${coreMidX},${y - coreHalfT * 0.6}  ${coreTipX},${y}
+    C ${coreMidX},${y + coreHalfT * 0.6}  ${coreBulgeX},${y + coreHalfT}  ${x},${y}
+    Z`;
+
+  const glowR = thick * 0.6 + len * 0.1;
 
   return (
     <>
       <defs>
-        <linearGradient id={c.id} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor={c.color2} />
-          <stop offset="100%" stopColor={c.color1} />
-        </linearGradient>
+        <radialGradient id={gid} cx="0.15" cy="0.5" r="0.85">
+          <stop offset="0%"   stopColor={coreColor}  stopOpacity="0.95" />
+          <stop offset="40%"  stopColor={midColor}   stopOpacity="0.8"  />
+          <stop offset="100%" stopColor={outerColor} stopOpacity="0.15" />
+        </radialGradient>
+        <filter id={fid} x="-30%" y="-60%" width="160%" height="220%">
+          <feGaussianBlur stdDeviation={Math.max(1.5, thick * 0.08)} />
+        </filter>
       </defs>
-      <polygon
-        points={pts}
-        fill={`url(#${c.id})`}
-        opacity="0.9"
-        style={{ filter: `drop-shadow(0 0 ${mode === 'fullpower' ? 10 : 6}px ${c.color1})` }}
-      />
+      <ellipse cx={x + len * 0.25} cy={y} rx={glowR} ry={glowR * 0.6}
+        fill={glowColor} opacity={0.12 + t * 0.12} filter={`url(#${fid})`} />
+      <path d={path} fill={`url(#${gid})`} opacity={0.85 + t * 0.15}
+        style={{ filter: `drop-shadow(0 0 ${3 + t * 8}px ${glowColor})` }} />
+      {t > 0.1 && (
+        <path d={corePath} fill={coreColor} opacity={0.6 + t * 0.35}
+          style={{ filter: `blur(${1 + t}px)` }} />
+      )}
     </>
   );
 }
 
-export default function GasBurnerIndicator({ config, value }) {
-  const { label = 'Burner', size = 72 } = config;
-  const mode = resolveMode(value);
-  const cx = size / 2, cy = size / 2;
-  const r  = size * 0.32;
+// ─── Large industrial register burner ────────────────────────────────────────
+function LargeBurner({ power, label, offline, uid }) {
+  const W = 360, H = 120;
+  const bodyW = 110, bodyH = 88;
+  const bodyY = (H - bodyH) / 2;
+  const nozzleW = 18, nozzleH = 50;
+  const nozzleX = bodyW;
+  const nozzleY = (H - nozzleH) / 2;
+  const flameStartX = nozzleX + nozzleW;
 
-  const bodyColors = {
-    off:       { fill: '#1e2a36', stroke: '#2e3e4e' },
-    on:        { fill: '#1a2a1a', stroke: '#2e6e3e' },
-    alarm:     { fill: '#3a0808', stroke: '#cc2222' },
-    nodata:    { fill: '#1a1a1a', stroke: '#333333' },
-    fullpower: { fill: '#2a1a00', stroke: '#cc7700' },
-    minpower:  { fill: '#0a0a2a', stroke: '#2244aa' },
-  };
-  const bc = bodyColors[mode] || bodyColors.nodata;
-
-  const modeLabels = {
-    off:       'OFF',
-    on:        'ON',
-    alarm:     'ALARM',
-    nodata:    'NO DATA',
-    fullpower: 'FULL PWR',
-    minpower:  'MIN PWR',
-  };
-  const modeColors = {
-    off:       '#445566',
-    on:        '#00e676',
-    alarm:     '#ff1744',
-    nodata:    '#445566',
-    fullpower: '#ffab00',
-    minpower:  '#42a5f5',
-  };
-
-  // Burner body: a trapezoid at bottom of the SVG
-  const bTop  = cy + r * 0.2;
-  const bBot  = cy + r * 1.7;
-  const bTopW = r * 0.7;
-  const bBotW = r * 0.9;
-  const burnerPts = `
-    ${cx - bTopW},${bTop}
-    ${cx + bTopW},${bTop}
-    ${cx + bBotW},${bBot}
-    ${cx - bBotW},${bBot}
-  `;
-
-  // Nozzle circle
-  const nozzleR = r * 0.22;
+  const bodyFill   = offline ? `url(#lb-off-${uid})` : `url(#lb-${uid})`;
+  const strokeCol  = offline ? '#2a3040' : '#3a4249';
 
   return (
-    <div className={`burner-wrap${mode === 'alarm' ? ' burner-alarm' : ''}`}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        {/* Flame */}
-        <FlameShape cx={cx} cy={cy} r={r} mode={mode} />
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'visible' }}>
+      <defs>
+        <linearGradient id={`lb-${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#b0b8c0" />
+          <stop offset="30%"  stopColor="#8a9299" />
+          <stop offset="70%"  stopColor="#6b737a" />
+          <stop offset="100%" stopColor="#4a5259" />
+        </linearGradient>
+        <linearGradient id={`lb-off-${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#3a4048" />
+          <stop offset="100%" stopColor="#22282e" />
+        </linearGradient>
+      </defs>
 
-        {/* Body */}
-        <polygon points={burnerPts} fill={bc.fill} stroke={bc.stroke} strokeWidth="1.5" />
+      {/* body */}
+      <rect x={0} y={bodyY} width={bodyW} height={bodyH} rx={3}
+        fill={bodyFill} stroke={strokeCol} strokeWidth={1.5} />
 
-        {/* Nozzle circle */}
-        <circle cx={cx} cy={bTop} r={nozzleR} fill={bc.fill} stroke={bc.stroke} strokeWidth="1.5" />
+      {/* internal tubes */}
+      {[0.25, 0.42, 0.58, 0.75].map((f, i) => (
+        <g key={i}>
+          <line x1={10} y1={bodyY + bodyH * f} x2={bodyW - 4} y2={bodyY + bodyH * f}
+            stroke={offline ? '#2a3040' : '#555e66'} strokeWidth={5} strokeLinecap="round" />
+          <line x1={10} y1={bodyY + bodyH * f} x2={bodyW - 4} y2={bodyY + bodyH * f}
+            stroke={offline ? '#303840' : '#6b757e'} strokeWidth={3} strokeLinecap="round" />
+        </g>
+      ))}
 
-        {/* Overlay icons */}
-        {mode === 'alarm' && (
-          <text x={cx} y={bTop - r * 0.1} textAnchor="middle" dominantBaseline="middle"
-            fontSize={r * 0.9} fill="#ff5252" style={{ pointerEvents: 'none' }}>
-            !
-          </text>
-        )}
-        {mode === 'nodata' && (
-          <text x={cx} y={bTop - r * 0.1} textAnchor="middle" dominantBaseline="middle"
-            fontSize={r * 0.85} fill="#556677" style={{ pointerEvents: 'none' }}>
-            ?
-          </text>
-        )}
-      </svg>
+      {/* vertical divider */}
+      <line x1={bodyW * 0.55} y1={bodyY + 4} x2={bodyW * 0.55} y2={bodyY + bodyH - 4}
+        stroke={strokeCol} strokeWidth={1} />
 
-      <div className="burner-label">{label}</div>
-      <div className="burner-mode" style={{ color: modeColors[mode] }}>
-        {modeLabels[mode]}
+      {/* nozzle cone */}
+      <polygon
+        points={`${nozzleX},${bodyY+6} ${nozzleX+nozzleW},${nozzleY} ${nozzleX+nozzleW},${nozzleY+nozzleH} ${nozzleX},${bodyY+bodyH-6}`}
+        fill={offline ? '#2a3040' : '#7a8490'} stroke={strokeCol} strokeWidth={1.2} />
+
+      {/* nozzle ring */}
+      <rect x={nozzleX+nozzleW-3} y={nozzleY-2} width={5} height={nozzleH+4} rx={1}
+        fill={offline ? '#22282e' : '#5a6470'} stroke={strokeCol} strokeWidth={0.8} />
+
+      {/* flame or offline mark */}
+      {offline
+        ? <text x={flameStartX + 30} y={H / 2 + 5} fontSize={13} fill="#445566"
+            fontFamily="'Courier New', monospace" letterSpacing="0.15em">OFFLINE</text>
+        : <Flame x={flameStartX} y={H / 2} power={power} maxLen={210} maxThick={78} uid={`lg-${uid}`} />
+      }
+    </svg>
+  );
+}
+
+// ─── Small compact tube burner ────────────────────────────────────────────────
+function SmallBurner({ power, label, offline, uid }) {
+  const W = 300, H = 56;
+  const bodyW = 74, bodyH = 32;
+  const bodyY = (H - bodyH) / 2;
+  const nozzleW = 14, nozzleH = 22;
+  const nozzleX = bodyW;
+  const nozzleY = (H - nozzleH) / 2;
+  const flameStartX = nozzleX + nozzleW;
+
+  const strokeCol = offline ? '#1e2830' : '#2a3238';
+
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ overflow: 'visible' }}>
+      <defs>
+        <linearGradient id={`sb-${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#8a9299" />
+          <stop offset="50%"  stopColor="#5a6268" />
+          <stop offset="100%" stopColor="#3a4248" />
+        </linearGradient>
+        <linearGradient id={`sb-off-${uid}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#303840" />
+          <stop offset="100%" stopColor="#1e2430" />
+        </linearGradient>
+      </defs>
+
+      {/* cable stub */}
+      <rect x={0} y={H/2-5} width={16} height={10} rx={2}
+        fill={offline ? '#1e2430' : '#3a4248'} stroke={strokeCol} strokeWidth={0.8} />
+
+      {/* body cylinder */}
+      <rect x={14} y={bodyY} width={bodyW-14} height={bodyH} rx={4}
+        fill={offline ? `url(#sb-off-${uid})` : `url(#sb-${uid})`}
+        stroke={strokeCol} strokeWidth={1.2} />
+
+      {/* body highlight */}
+      <line x1={18} y1={bodyY+5} x2={bodyW-2} y2={bodyY+5}
+        stroke={offline ? '#252e38' : '#9aa2a9'} strokeWidth={0.7} opacity={0.5} />
+
+      {/* nozzle taper */}
+      <polygon
+        points={`${nozzleX},${bodyY+3} ${nozzleX+nozzleW},${nozzleY} ${nozzleX+nozzleW},${nozzleY+nozzleH} ${nozzleX},${bodyY+bodyH-3}`}
+        fill={offline ? '#1e2830' : '#5a6470'} stroke={strokeCol} strokeWidth={1} />
+
+      {/* nozzle tip ring */}
+      <rect x={nozzleX+nozzleW-2} y={nozzleY-1} width={4} height={nozzleH+2} rx={1}
+        fill={offline ? '#181e28' : '#4a5460'} stroke={strokeCol} strokeWidth={0.6} />
+
+      {/* flame or offline mark */}
+      {offline
+        ? <text x={flameStartX + 20} y={H / 2 + 5} fontSize={11} fill="#445566"
+            fontFamily="'Courier New', monospace" letterSpacing="0.15em">OFFLINE</text>
+        : <Flame x={flameStartX} y={H / 2} power={power} maxLen={190} maxThick={38} uid={`sm-${uid}`} />
+      }
+    </svg>
+  );
+}
+
+// ─── Exported indicator component ────────────────────────────────────────────
+export default function GasBurnerIndicator({ config, value }) {
+  const { label = 'Burner', burnerType = 'large', scale = 1 } = config;
+  const rawUid  = useId().replace(/:/g, '');
+
+  const isOffline = value === null || value === undefined;
+  const power     = isOffline ? 0 : Math.max(0, Math.min(100, Number(value)));
+  const pctColor  = isOffline ? '#445566' : powerColor(power);
+
+  const BurnerBody = burnerType === 'small' ? SmallBurner : LargeBurner;
+
+  return (
+    <div
+      className="gb-wrap"
+      style={{ transform: scale !== 1 ? `scale(${scale})` : undefined,
+               transformOrigin: 'left center' }}
+    >
+      <BurnerBody power={power} label={label} offline={isOffline} uid={rawUid} />
+
+      <div className="gb-meta">
+        <span className="gb-label">{label}</span>
+        <span className="gb-pct" style={{ color: pctColor }}>
+          {isOffline ? 'OFFLINE' : `${power}%`}
+        </span>
       </div>
     </div>
   );

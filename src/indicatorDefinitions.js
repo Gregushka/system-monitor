@@ -99,40 +99,55 @@ OnOffIndicatorCreate({
 */
 // ─── Diagram 2 ────────────────────────────────────────────────────────────────
 
-
+/*
 GasBurnerIndicatorCreate({
   ind_id:   'burner_one',
   bg_id:    'diagram2',
   label:    'Burn',
   top:      1850,
-  left:     120,
+  left:     420,
   fontsize: 26,
+});
+*/
+GasBurnerIndicatorCreate({
+  ind_id:   'burner_one',
+  bg_id:    'diagram2',
+  label:    'Burner1',
+  top:      1660,
+  left:     225,
+  fontsize: 26,
+  burnerType: 'small',
+  scale:      0.9,  
 });
 
 GasBurnerIndicatorCreate({
   ind_id:   'burner_two',
   bg_id:    'diagram2',
-  label:    'Burn',
-  top:      1950,
-  left:     300,
+  label:    'Burner2',
+  top:      1810,
+  left:     285,
   fontsize: 26,
+  burnerType: 'small',
+  scale:      0.9,  
 });
 
 GasBurnerIndicatorCreate({
   ind_id:   'burner_three',
   bg_id:    'diagram2',
-  label:    'Burn',
-  top:      550,
-  left:     1150,
+  label:    'Burner3',
+  top:      660,
+  left:     1180,
   fontsize: 26,
+  burnerType: 'small',
+  scale:      0.9,  
 });
 
 GasFlapIndicatorCreate({
   ind_id:   'burner_flap',
   bg_id:    'diagram2',
   label:    'Заслонка',
-  top:      1380,
-  left:     700,
+  top:      1300,
+  left:     750,
   fontsize: 26,
   labelChimney: 'Выхлоп',
   labelBypass: 'Мимо',
