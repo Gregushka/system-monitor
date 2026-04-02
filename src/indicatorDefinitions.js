@@ -236,9 +236,19 @@ OnOffIndicatorCreate({
   ind_id: 'cooling',
   bg_id:  'diagram2',
   label:  'Cooling',
-  top:    1495,
-  left:   548,
-  radius: 36,
+  top:    1795,
+  left:   555,
+  radius: 20,
+  color:  '#00e676',
+});
+
+OnOffIndicatorCreate({
+  ind_id: 'cooling2',
+  bg_id:  'diagram2',
+  label:  'Cooling2',
+  top:    1810,
+  left:   458,
+  radius: 20,
   color:  '#00e676',
 });
 
@@ -246,9 +256,9 @@ OnOffIndicatorCreate({
   ind_id: 'chimney',
   bg_id:  'diagram2',
   label:  'Chimney',
-  top:    1210,
-  left:   1160,
-  radius: 36,
+  top:    1750,
+  left:   980,
+  radius: 30,
   color:  '#00e676',
 });
 
@@ -256,9 +266,9 @@ OnOffIndicatorCreate({
   ind_id: 'cyclon',
   bg_id:  'diagram2',
   label:  'Cyclon',
-  top:    1240,
-  left:   1035,
-  radius: 36,
+  top:    1810,
+  left:   838,
+  radius: 20,
   color:  '#00e676',
 });
 
@@ -267,8 +277,8 @@ DigitalIndicatorCreate({
   bg_id:    'diagram2',
   label:    'TE1',
   unit:     '°C',
-  top:      1215,
-  left:     240,
+  top:      1510,
+  left:     250,
   fontSize: 26,
 });
 
@@ -277,8 +287,8 @@ DigitalIndicatorCreate({
   bg_id:    'diagram2',
   label:    'TE2',
   unit:     '°C',
-  top:      1645,
-  left:     335,
+  top:      1800,
+  left:     370,
   fontSize: 26,
 });
 
@@ -287,8 +297,8 @@ DigitalIndicatorCreate({
   bg_id:    'diagram2',
   label:    'TE3',
   unit:     '°C',
-  top:      100,
-  left:     1660,
+  top:      200,
+  left:     1470,
   fontSize: 26,
 });
 
@@ -297,8 +307,8 @@ DigitalIndicatorCreate({
   bg_id:    'diagram2',
   label:    'TE4',
   unit:     '°C',
-  top:      860,
-  left:     560,
+  top:      1270,
+  left:     570,
   fontSize: 26,
 });
 
@@ -307,8 +317,8 @@ DigitalIndicatorCreate({
   bg_id:    'diagram2',
   label:    'TE5',
   unit:     '°C',
-  top:      860,
-  left:     1035,
+  top:      1250,
+  left:     835,
   fontSize: 26,
 });
 
@@ -317,8 +327,8 @@ DigitalIndicatorCreate({
   bg_id:    'diagram2',
   label:    'TE6',
   unit:     '°C',
-  top:      550,
-  left:     1150,
+  top:      810,
+  left:     1175,
   fontSize: 26,
 });
 
@@ -326,8 +336,8 @@ GasBurnerIndicatorCreate({
   ind_id:   'burner_one',
   bg_id:    'diagram2',
   label:    'Burner1',
-  top:      1325,
-  left:     260,
+  top:      1650,
+  left:     195,
   fontsize: 26,
   burnerType: 'small',
   scale:      0.9,  
@@ -337,8 +347,9 @@ GasBurnerIndicatorCreate({
   ind_id:   'burner_two',
   bg_id:    'diagram2',
   label:    'Burner2',
-  top:      1550,
-  left:     260,
+  direction:  270,
+  top:      1600,
+  left:     478,
   fontsize: 26,
   burnerType: 'small',
   scale:      0.9,  
@@ -348,8 +359,8 @@ GasBurnerIndicatorCreate({
   ind_id:   'burner_three',
   bg_id:    'diagram2',
   label:    'Burner3',
-  top:      430,
-  left:     1190,
+  top:      640,
+  left:     1180,
   fontsize: 26,
   burnerType: 'small',
   scale:      0.9,  
@@ -359,8 +370,8 @@ GasFlapIndicatorCreate({
   ind_id:   'burner_flap',
   bg_id:    'diagram2',
   label:    'Заслонка',
-  top:      900,
-  left:     650,
+  top:      1290,
+  left:     710,
   fontsize: 26,
   labelChimney: 'Выхлоп',
   labelBypass: 'Мимо',
