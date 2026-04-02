@@ -22,7 +22,7 @@ import SensorsPanel   from './components/SensorsPanel';
 // ─── Background definitions ───────────────────────────────────────────────────
 export const BACKGROUNDS = [
   { id: 'diagram1', label: 'Насосы', backgroundImage: process.env.PUBLIC_URL + '/backgrounds/diagram1.png', backgroundColor: '#0d1b2a' },
-  { id: 'diagram2', label: 'Горелки', backgroundImage: process.env.PUBLIC_URL + '/backgrounds/diagram2.png', backgroundColor: '#0d1b2a' },
+  { id: 'diagram2', label: 'Горелки', backgroundImage: process.env.PUBLIC_URL + '/backgrounds/diagram2.jpg', backgroundColor: '#0d1b2a' },
 ];
 
 // ─── Role helpers ─────────────────────────────────────────────────────────────

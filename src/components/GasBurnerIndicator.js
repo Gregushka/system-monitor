@@ -15,6 +15,11 @@ import './css/GasBurnerIndicator.css';
  *                                     "large" — industrial register burner
  *                                     "small" — compact tube burner
  *   scale       {number}            Uniform scale factor (default 1.0)
+ *   direction   {number}            Flame direction in degrees, 0–360
+ *                                     0 / 360 = pointing straight up
+ *                                     90      = pointing right  (default)
+ *                                     180     = pointing down
+ *                                     270     = pointing left
  *
  * Value from API:
  *   number 0–100   →  flame intensity percentage
@@ -124,7 +129,7 @@ function Flame({ x, y, power, maxLen, maxThick, uid }) {
 }
 
 // ─── Large industrial register burner ────────────────────────────────────────
-function LargeBurner({ power, label, offline, uid }) {
+function LargeBurner({ power, label, offline, uid, direction }) {
   const W = 360, H = 120;
   const bodyW = 110, bodyH = 88;
   const bodyY = (H - bodyH) / 2;
@@ -132,6 +137,12 @@ function LargeBurner({ power, label, offline, uid }) {
   const nozzleX = bodyW;
   const nozzleY = (H - nozzleH) / 2;
   const flameStartX = nozzleX + nozzleW;
+
+  // Nozzle tip is the rotation pivot (the point attached to the pipe)
+  const pivotX = bodyW + nozzleW;   // 128
+  const pivotY = H / 2;             // 60
+  // direction=90 → pointing right (natural SVG orientation); 0/360 → up
+  const rotateDeg = direction - 90;
 
   const bodyFill   = offline ? `url(#lb-off-${uid})` : `url(#lb-${uid})`;
   const strokeCol  = offline ? '#2a3040' : '#3a4249';
@@ -151,45 +162,47 @@ function LargeBurner({ power, label, offline, uid }) {
         </linearGradient>
       </defs>
 
-      {/* body */}
-      <rect x={0} y={bodyY} width={bodyW} height={bodyH} rx={3}
-        fill={bodyFill} stroke={strokeCol} strokeWidth={1.5} />
+      <g transform={`rotate(${rotateDeg}, ${pivotX}, ${pivotY})`}>
+        {/* body */}
+        <rect x={0} y={bodyY} width={bodyW} height={bodyH} rx={3}
+          fill={bodyFill} stroke={strokeCol} strokeWidth={1.5} />
 
-      {/* internal tubes */}
-      {[0.25, 0.42, 0.58, 0.75].map((f, i) => (
-        <g key={i}>
-          <line x1={10} y1={bodyY + bodyH * f} x2={bodyW - 4} y2={bodyY + bodyH * f}
-            stroke={offline ? '#2a3040' : '#555e66'} strokeWidth={5} strokeLinecap="round" />
-          <line x1={10} y1={bodyY + bodyH * f} x2={bodyW - 4} y2={bodyY + bodyH * f}
-            stroke={offline ? '#303840' : '#6b757e'} strokeWidth={3} strokeLinecap="round" />
-        </g>
-      ))}
+        {/* internal tubes */}
+        {[0.25, 0.42, 0.58, 0.75].map((f, i) => (
+          <g key={i}>
+            <line x1={10} y1={bodyY + bodyH * f} x2={bodyW - 4} y2={bodyY + bodyH * f}
+              stroke={offline ? '#2a3040' : '#555e66'} strokeWidth={5} strokeLinecap="round" />
+            <line x1={10} y1={bodyY + bodyH * f} x2={bodyW - 4} y2={bodyY + bodyH * f}
+              stroke={offline ? '#303840' : '#6b757e'} strokeWidth={3} strokeLinecap="round" />
+          </g>
+        ))}
 
-      {/* vertical divider */}
-      <line x1={bodyW * 0.55} y1={bodyY + 4} x2={bodyW * 0.55} y2={bodyY + bodyH - 4}
-        stroke={strokeCol} strokeWidth={1} />
+        {/* vertical divider */}
+        <line x1={bodyW * 0.55} y1={bodyY + 4} x2={bodyW * 0.55} y2={bodyY + bodyH - 4}
+          stroke={strokeCol} strokeWidth={1} />
 
-      {/* nozzle cone */}
-      <polygon
-        points={`${nozzleX},${bodyY+6} ${nozzleX+nozzleW},${nozzleY} ${nozzleX+nozzleW},${nozzleY+nozzleH} ${nozzleX},${bodyY+bodyH-6}`}
-        fill={offline ? '#2a3040' : '#7a8490'} stroke={strokeCol} strokeWidth={1.2} />
+        {/* nozzle cone */}
+        <polygon
+          points={`${nozzleX},${bodyY+6} ${nozzleX+nozzleW},${nozzleY} ${nozzleX+nozzleW},${nozzleY+nozzleH} ${nozzleX},${bodyY+bodyH-6}`}
+          fill={offline ? '#2a3040' : '#7a8490'} stroke={strokeCol} strokeWidth={1.2} />
 
-      {/* nozzle ring */}
-      <rect x={nozzleX+nozzleW-3} y={nozzleY-2} width={5} height={nozzleH+4} rx={1}
-        fill={offline ? '#22282e' : '#5a6470'} stroke={strokeCol} strokeWidth={0.8} />
+        {/* nozzle ring */}
+        <rect x={nozzleX+nozzleW-3} y={nozzleY-2} width={5} height={nozzleH+4} rx={1}
+          fill={offline ? '#22282e' : '#5a6470'} stroke={strokeCol} strokeWidth={0.8} />
 
-      {/* flame or offline mark */}
-      {offline
-        ? <text x={flameStartX + 30} y={H / 2 + 5} fontSize={13} fill="#445566"
-            fontFamily="'Courier New', monospace" letterSpacing="0.15em">OFFLINE</text>
-        : <Flame x={flameStartX} y={H / 2} power={power} maxLen={210} maxThick={78} uid={`lg-${uid}`} />
-      }
+        {/* flame or offline mark */}
+        {offline
+          ? <text x={flameStartX + 30} y={H / 2 + 5} fontSize={13} fill="#445566"
+              fontFamily="'Courier New', monospace" letterSpacing="0.15em">OFFLINE</text>
+          : <Flame x={flameStartX} y={H / 2} power={power} maxLen={210} maxThick={78} uid={`lg-${uid}`} />
+        }
+      </g>
     </svg>
   );
 }
 
 // ─── Small compact tube burner ────────────────────────────────────────────────
-function SmallBurner({ power, label, offline, uid }) {
+function SmallBurner({ power, label, offline, uid, direction }) {
   const W = 300, H = 56;
   const bodyW = 74, bodyH = 32;
   const bodyY = (H - bodyH) / 2;
@@ -197,6 +210,11 @@ function SmallBurner({ power, label, offline, uid }) {
   const nozzleX = bodyW;
   const nozzleY = (H - nozzleH) / 2;
   const flameStartX = nozzleX + nozzleW;
+
+  // Nozzle tip pivot: x = bodyW + nozzleW, y = H/2
+  const pivotX = bodyW + nozzleW;   // 88
+  const pivotY = H / 2;             // 28
+  const rotateDeg = direction - 90;
 
   const strokeCol = offline ? '#1e2830' : '#2a3238';
 
@@ -214,41 +232,43 @@ function SmallBurner({ power, label, offline, uid }) {
         </linearGradient>
       </defs>
 
-      {/* cable stub */}
-      <rect x={0} y={H/2-5} width={16} height={10} rx={2}
-        fill={offline ? '#1e2430' : '#3a4248'} stroke={strokeCol} strokeWidth={0.8} />
+      <g transform={`rotate(${rotateDeg}, ${pivotX}, ${pivotY})`}>
+        {/* cable stub */}
+        <rect x={0} y={H/2-5} width={16} height={10} rx={2}
+          fill={offline ? '#1e2430' : '#3a4248'} stroke={strokeCol} strokeWidth={0.8} />
 
-      {/* body cylinder */}
-      <rect x={14} y={bodyY} width={bodyW-14} height={bodyH} rx={4}
-        fill={offline ? `url(#sb-off-${uid})` : `url(#sb-${uid})`}
-        stroke={strokeCol} strokeWidth={1.2} />
+        {/* body cylinder */}
+        <rect x={14} y={bodyY} width={bodyW-14} height={bodyH} rx={4}
+          fill={offline ? `url(#sb-off-${uid})` : `url(#sb-${uid})`}
+          stroke={strokeCol} strokeWidth={1.2} />
 
-      {/* body highlight */}
-      <line x1={18} y1={bodyY+5} x2={bodyW-2} y2={bodyY+5}
-        stroke={offline ? '#252e38' : '#9aa2a9'} strokeWidth={0.7} opacity={0.5} />
+        {/* body highlight */}
+        <line x1={18} y1={bodyY+5} x2={bodyW-2} y2={bodyY+5}
+          stroke={offline ? '#252e38' : '#9aa2a9'} strokeWidth={0.7} opacity={0.5} />
 
-      {/* nozzle taper */}
-      <polygon
-        points={`${nozzleX},${bodyY+3} ${nozzleX+nozzleW},${nozzleY} ${nozzleX+nozzleW},${nozzleY+nozzleH} ${nozzleX},${bodyY+bodyH-3}`}
-        fill={offline ? '#1e2830' : '#5a6470'} stroke={strokeCol} strokeWidth={1} />
+        {/* nozzle taper */}
+        <polygon
+          points={`${nozzleX},${bodyY+3} ${nozzleX+nozzleW},${nozzleY} ${nozzleX+nozzleW},${nozzleY+nozzleH} ${nozzleX},${bodyY+bodyH-3}`}
+          fill={offline ? '#1e2830' : '#5a6470'} stroke={strokeCol} strokeWidth={1} />
 
-      {/* nozzle tip ring */}
-      <rect x={nozzleX+nozzleW-2} y={nozzleY-1} width={4} height={nozzleH+2} rx={1}
-        fill={offline ? '#181e28' : '#4a5460'} stroke={strokeCol} strokeWidth={0.6} />
+        {/* nozzle tip ring */}
+        <rect x={nozzleX+nozzleW-2} y={nozzleY-1} width={4} height={nozzleH+2} rx={1}
+          fill={offline ? '#181e28' : '#4a5460'} stroke={strokeCol} strokeWidth={0.6} />
 
-      {/* flame or offline mark */}
-      {offline
-        ? <text x={flameStartX + 20} y={H / 2 + 5} fontSize={11} fill="#445566"
-            fontFamily="'Courier New', monospace" letterSpacing="0.15em">OFFLINE</text>
-        : <Flame x={flameStartX} y={H / 2} power={power} maxLen={190} maxThick={38} uid={`sm-${uid}`} />
-      }
+        {/* flame or offline mark */}
+        {offline
+          ? <text x={flameStartX + 20} y={H / 2 + 5} fontSize={11} fill="#445566"
+              fontFamily="'Courier New', monospace" letterSpacing="0.15em">OFFLINE</text>
+          : <Flame x={flameStartX} y={H / 2} power={power} maxLen={190} maxThick={38} uid={`sm-${uid}`} />
+        }
+      </g>
     </svg>
   );
 }
 
 // ─── Exported indicator component ────────────────────────────────────────────
 export default function GasBurnerIndicator({ config, value }) {
-  const { label = 'Burner', burnerType = 'large', scale = 1 } = config;
+  const { label = 'Burner', burnerType = 'large', scale = 1, direction = 90 } = config;
   const rawUid  = useId().replace(/:/g, '');
 
   const isOffline = value === null || value === undefined;
@@ -263,7 +283,7 @@ export default function GasBurnerIndicator({ config, value }) {
       style={{ transform: scale !== 1 ? `scale(${scale})` : undefined,
                transformOrigin: 'left center' }}
     >
-      <BurnerBody power={power} label={label} offline={isOffline} uid={rawUid} />
+      <BurnerBody power={power} label={label} offline={isOffline} uid={rawUid} direction={direction} />
 
       <div className="gb-meta">
         <span className="gb-label">{label}</span>
