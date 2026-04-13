@@ -1,17 +1,13 @@
 // ─── API Configuration ────────────────────────────────────────────────────────
-export const API_BASE = 'https://perelandra.ru/scada/sysmon/';
+// Override with REACT_APP_API_BASE in .env.local for local development.
+// Example: REACT_APP_API_BASE=http://localhost/sysmon-api-php/v1
+export const API_BASE = process.env.REACT_APP_API_BASE || '/sysmon-api/v1';
 
 // ─── Crypto helpers ───────────────────────────────────────────────────────────
-/**
- * SHA-256 hash compatible with PHP's password_verify when the backend
- * stores sha256 hashes (as demonstrated by the API example).
- * Returns lowercase hex string.
- */
+/** SHA-256 of message → lowercase hex string */
 export async function sha256(message) {
-  const msgBuffer = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(message));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 // ─── Internal fetch wrapper ───────────────────────────────────────────────────
@@ -20,11 +16,9 @@ async function apiFetch(path, { method = 'GET', token = null, body = null } = {}
   if (token) headers['X-Auth-Token'] = token;
 
   const opts = { method, headers };
-  if (body) opts.body = JSON.stringify(body);
+  if (body !== null) opts.body = JSON.stringify(body);
 
-  const res = await fetch(`${API_BASE}${path}`, opts);
-
-  // Capture auth token from login response header
+  const res = await fetch(`${API_BASE}/${path}`, opts);
   const newToken = res.headers.get('X-Auth-Token');
   const data = await res.json().catch(() => ({}));
 
@@ -32,159 +26,149 @@ async function apiFetch(path, { method = 'GET', token = null, body = null } = {}
 }
 
 // ─── Authentication ───────────────────────────────────────────────────────────
-/**
- * Login: GET /auth?login={username}&password={sha256_hash}
- * Returns { ok, code, message, user, role, token }
- */
 export async function apiLogin(username, password) {
   const hash = await sha256(password);
   const { data, token: headerToken, ok } = await apiFetch(
     `auth?login=${encodeURIComponent(username)}&password=${hash}`
   );
 
-  const success = ok && data.code === 0;
-
-  // Token resolution order:
-  //  1. X-Auth-Token response header  (standard per API doc)
-  //  2. last_token field inside the user body  (some server versions store it there)
-  //  3. Synthetic fallback: use the hashed password as a bearer token so that
-  //     subsequent authenticated calls still carry a credential.  This handles
-  //     servers that expose the token only via a PHP session cookie rather than
-  //     a readable JS header (Access-Control-Expose-Headers not set).
-  const bodyToken  = data.data?.user?.last_token;
-  const resolvedToken = headerToken || bodyToken || (success ? hash : null);
+  const success = ok && data?.auth?.code === 0;
+  const authData = data?.auth?.data || {};
+  const bodyToken = authData?.user?.last_token;
+  const resolvedToken = headerToken || bodyToken || null;
 
   return {
     ok:      success,
-    code:    data.code,
-    message: data.message,
-    user:    data.data?.user  || null,
-    role:    data.data?.role  || null,
+    code:    data?.auth?.code,
+    message: data?.auth?.message,
+    user:    authData.user   || null,
+    role:    authData.role   || null,
     token:   resolvedToken,
+    screens: data?.data?.screens || [],
+    hdr:     data?.data?.hdr     || {},
   };
 }
 
-// ─── Sensor endpoints ─────────────────────────────────────────────────────────
-/** GET /sensor  →  array of sensor objects */
-export async function apiGetSensors(token) {
-  const { data, ok } = await apiFetch('sensor', { token });
-  return ok ? (Array.isArray(data) ? data : [data]) : [];
+// ─── Live data ────────────────────────────────────────────────────────────────
+export async function apiReadData(token, screenId = null) {
+  const path = screenId != null ? `data/${screenId}` : 'data';
+  const { data, ok } = await apiFetch(path, { token });
+  if (!ok) return null;
+  return {
+    hdr:        data?.data?.hdr        || {},
+    indicators: data?.data?.indicators || [],
+  };
 }
 
-/** GET /sensor/{id} */
-export async function apiGetSensor(token, id) {
-  const { data, ok } = await apiFetch(`sensor/${id}`, { token });
-  return ok ? data : null;
+// ─── User settings ────────────────────────────────────────────────────────────
+export async function apiGetSettings(token) {
+  const { data, ok } = await apiFetch('settings', { token });
+  return ok ? (data?.settings || {}) : {};
 }
 
-/** GET /sensor_roles  →  array with role names in permissions */
-export async function apiGetSensorRoles(token) {
-  const { data, ok } = await apiFetch('sensor_roles', { token });
-  return ok ? (Array.isArray(data) ? data : [data]) : [];
+export async function apiSaveSettings(token, settings) {
+  const { data, ok } = await apiFetch('settings', { method: 'POST', token, body: settings });
+  return { ok: ok && data?.status_code === 0, settings: data?.settings || {} };
 }
 
-/** GET /sensor_roles/{id} */
-export async function apiGetSensorRolesById(token, id) {
-  const { data, ok } = await apiFetch(`sensor_roles/${id}`, { token });
-  return ok ? data : null;
-}
-
-/**
- * POST /sensor/{id}/update  — update sensor permissions
- * permissions: { create:[role_ids], read:[role_ids], update:[role_ids], delete:[role_ids] }
- */
-export async function apiUpdateSensorPermissions(token, id, permissions) {
-  const { data, ok } = await apiFetch(`sensor/${id}/update`, {
-    method: 'POST',
-    token,
-    body: { id, permissions },
-  });
-  return { ok: ok && data.code === 0, message: data.message };
-}
-
-// ─── Data polling ─────────────────────────────────────────────────────────────
-/**
- * GET /read_data
- * Returns { hdr: { bg_id, status, status_text }, data: [{ ts, name, value }] }
- */
-export async function apiReadData(token) {
-  const { data, ok } = await apiFetch('read_data', { token });
-  return ok ? data : null;
-}
-
-// ─── Role endpoints ───────────────────────────────────────────────────────────
-/** GET /role  →  array of all roles */
-export async function apiGetRoles(token) {
-  const { data, ok } = await apiFetch('role', { token });
-  return ok ? (Array.isArray(data) ? data : [data]) : [];
-}
-
-/** GET /role/{id} */
-export async function apiGetRole(token, id) {
-  const { data, ok } = await apiFetch(`role/${id}`, { token });
-  return ok ? data : null;
-}
-
-// ─── User management (Admin/Almighty only) ────────────────────────────────────
-/**
- * GET /user  →  array of all users
- * (Extended endpoint not in original doc – assumed to exist following API pattern)
- */
+// ─── Users ────────────────────────────────────────────────────────────────────
 export async function apiGetUsers(token) {
-  const { data, ok } = await apiFetch('user', { token });
-  return ok ? (Array.isArray(data) ? data : [data]) : [];
+  const { data, ok } = await apiFetch('users', { token });
+  return ok ? { users: data?.users || [], roles: data?.roles || [], groups: data?.groups || [] }
+            : { users: [], roles: [], groups: [] };
 }
 
-/**
- * POST /user_create
- * body: { login, password (sha256), role_id }
- */
-export async function apiCreateUser(token, login, password, role_id) {
+export async function apiCreateUser(token, { login, password, roles = [], groups = [] }) {
   const hash = await sha256(password);
-  const { data, ok } = await apiFetch('user_create', {
-    method: 'POST',
-    token,
-    body: { login, password: hash, role_id },
+  const { data, ok } = await apiFetch('users', {
+    method: 'POST', token,
+    body: { login, password: hash, roles, groups },
   });
-  return { ok: ok && data.code === 0, message: data.message };
+  return { ok: ok && data?.status_code === 0, message: data?.message, user: data?.user || null };
 }
 
-/**
- * POST /user_delete
- * body: { login }
- */
-export async function apiDeleteUser(token, login) {
-  const { data, ok } = await apiFetch('user_delete', {
-    method: 'POST',
-    token,
-    body: { login },
-  });
-  return { ok: ok && data.code === 0, message: data.message };
+export async function apiUpdateUser(token, userId, { login, password } = {}) {
+  const body = {};
+  if (login    !== undefined) body.login    = login;
+  if (password !== undefined) body.password = await sha256(password);
+  const { data, ok } = await apiFetch(`users/${userId}`, { method: 'PUT', token, body });
+  return { ok: ok && data?.status_code === 0, message: data?.message };
 }
 
-/**
- * POST /password_set
- * body: { login, password (sha256) }
- */
-export async function apiSetPassword(token, login, password) {
-  const hash = await sha256(password);
-  const { data, ok } = await apiFetch('password_set', {
-    method: 'POST',
-    token,
-    body: { login, password: hash },
-  });
-  return { ok: ok && data.code === 0, message: data.message };
+export async function apiDeleteUser(token, userId) {
+  const { data, ok } = await apiFetch(`users/${userId}`, { method: 'DELETE', token });
+  return { ok: ok && data?.status_code === 0, message: data?.message };
 }
 
-/**
- * POST /user_update  (extended endpoint – update user role)
- * body: { login, role_id }
- */
-export async function apiUpdateUser(token, login, role_id) {
-  const { data, ok } = await apiFetch('user_update', {
-    method: 'POST',
-    token,
-    body: { login, role_id },
+export async function apiAssignRoles(token, userId, roleIds) {
+  const { data, ok } = await apiFetch(`users/${userId}/roles`, {
+    method: 'POST', token, body: { roles: roleIds },
   });
-  return { ok: ok && data.code === 0, message: data.message };
+  return { ok: ok && data?.status_code === 0, message: data?.message };
+}
+
+export async function apiAssignGroups(token, userId, groupIds) {
+  const { data, ok } = await apiFetch(`users/${userId}/groups`, {
+    method: 'POST', token, body: { groups: groupIds },
+  });
+  return { ok: ok && data?.status_code === 0, message: data?.message };
+}
+
+// ─── Roles ────────────────────────────────────────────────────────────────────
+export async function apiGetRoles(token) {
+  const { data, ok } = await apiFetch('roles', { token });
+  return ok ? (data?.roles || []) : [];
+}
+
+export async function apiCreateRole(token, { name, description = '' }) {
+  const { data, ok } = await apiFetch('roles', {
+    method: 'POST', token, body: { name, description },
+  });
+  return { ok: ok && data?.status_code === 0, message: data?.message };
+}
+
+export async function apiUpdateRole(token, roleId, { name, description }) {
+  const { data, ok } = await apiFetch(`roles/${roleId}`, {
+    method: 'PUT', token, body: { name, description },
+  });
+  return { ok: ok && data?.status_code === 0, message: data?.message };
+}
+
+export async function apiDeleteRole(token, roleId) {
+  const { data, ok } = await apiFetch(`roles/${roleId}`, { method: 'DELETE', token });
+  return { ok: ok && data?.status_code === 0, message: data?.message };
+}
+
+// ─── Groups ───────────────────────────────────────────────────────────────────
+export async function apiGetGroups(token) {
+  const { data, ok } = await apiFetch('groups', { token });
+  return ok ? (data?.groups || []) : [];
+}
+
+export async function apiCreateGroup(token, { name, description = '' }) {
+  const { data, ok } = await apiFetch('groups', {
+    method: 'POST', token, body: { name, description },
+  });
+  return { ok: ok && data?.status_code === 0, message: data?.message };
+}
+
+export async function apiUpdateGroup(token, groupId, { name, description }) {
+  const { data, ok } = await apiFetch(`groups/${groupId}`, {
+    method: 'PUT', token, body: { name, description },
+  });
+  return { ok: ok && data?.status_code === 0, message: data?.message };
+}
+
+export async function apiDeleteGroup(token, groupId) {
+  const { data, ok } = await apiFetch(`groups/${groupId}`, { method: 'DELETE', token });
+  return { ok: ok && data?.status_code === 0, message: data?.message };
+}
+
+// ─── Indicator positioning ────────────────────────────────────────────────────
+export async function apiSetPosition(token, indId, { ind_id, screen, aggregate, top, left }) {
+  const { data, ok } = await apiFetch(`position/${encodeURIComponent(indId)}`, {
+    method: 'POST', token,
+    body: { ind_id, screen, aggregate, top, left },
+  });
+  return { ok: ok && data?.status_code === 0, message: data?.status_text, data };
 }

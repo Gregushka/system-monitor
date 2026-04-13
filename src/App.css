@@ -15,7 +15,8 @@
   --amber:         #ffaa00;
   --red:           #ff4444;
   --mono:          'Courier New', Courier, monospace;
-  --footer-height: 160px;   /* ← change this one value to resize the footer */
+  --sans:          -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --footer-height: 160px;
 }
 
 html, body, #root {
@@ -27,7 +28,6 @@ html, body, #root {
   font-family: var(--mono);
 }
 
-/* ─── App shell ──────────────────────────────────────────────────────────── */
 .app-root {
   display: flex;
   flex-direction: column;
@@ -35,7 +35,6 @@ html, body, #root {
   width: 100vw;
 }
 
-/* ─── Main content area (sits between tabs and footer) ───────────────────── */
 .app-main {
   flex: 1;
   overflow: hidden;
