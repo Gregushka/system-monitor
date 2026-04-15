@@ -1,0 +1,15 @@
+services:
+  system-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: system-monitor
+    restart: unless-stopped
+    ports:
+      - "8500:80"
+    networks:
+      - webnet
+
+networks:
+  webnet:
+    driver: bridge
