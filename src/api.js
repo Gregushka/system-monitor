@@ -1,4 +1,5 @@
-export const API_BASE = process.env.REACT_APP_API_BASE || '/sysmon-api/v1';
+// export const API_BASE = process.env.REACT_APP_API_BASE || '/sysmon-api/v1';
+export const API_BASE = 'https://perelandra.ru/scada/sysmon-api/v1';
 
 export async function sha256(message) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(message));
