@@ -1,0 +1,107 @@
+/* Floating panel – absolute over the diagram area, bottom-right corner */
+.pos-panel {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 100;
+  background: rgba(13, 13, 13, 0.92);
+  border: 1px solid #3a5a7a;
+  border-radius: 5px;
+  padding: 12px 14px;
+  min-width: 220px;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+}
+
+.pos-panel-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #333;
+}
+
+.pos-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.pos-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pos-select,
+.pos-input {
+  background: var(--bg-deep);
+  border: 1px solid #333;
+  border-radius: 3px;
+  color: var(--text-main);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 5px 7px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+
+.pos-select:focus,
+.pos-input:focus { border-color: var(--accent); }
+
+.pos-select:disabled,
+.pos-input:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.pos-coords {
+  display: flex;
+  gap: 8px;
+}
+
+.pos-coords .pos-field { flex: 1; }
+
+.pos-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.pos-btn {
+  flex: 1;
+  background: transparent;
+  border: 1px solid #333;
+  border-radius: 3px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  padding: 5px 6px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.pos-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.pos-btn--try  { border-color: #2e5580; color: #7ec8e3; }
+.pos-btn--try:hover:not(:disabled)  { background: rgba(126,200,227,0.10); }
+
+.pos-btn--save { border-color: var(--accent); color: var(--accent); }
+.pos-btn--save:hover:not(:disabled) { background: rgba(0,180,216,0.12); }
+
+.pos-status {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--green);
+  word-break: break-all;
+}
+
+.pos-status--error { color: var(--red); }
+ 
