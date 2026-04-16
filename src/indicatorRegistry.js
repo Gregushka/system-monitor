@@ -10,13 +10,11 @@ function _register(type, config) {
 export function loadFromAuthScreens(screens) {
   Object.keys(_registry).forEach((k) => delete _registry[k]);
   _seq = 0;
-
   for (const screen of screens) {
     if (screen.type !== 'indicators') continue;
-    const bgId = screen.background
+    const bgId = screen.background && screen.background !== 'default'
       ? screen.background.replace(/\.[^.]+$/, '')
       : screen.name.toLowerCase().replace(/\s+/g, '_');
-
     for (const [aggName, aggData] of Object.entries(screen.aggregates || {})) {
       for (const ind of (aggData.indicators || [])) {
         const settings = ind.settings || {};
@@ -40,14 +38,6 @@ export function loadFromAuthScreens(screens) {
   }
 }
 
-export function DigitalIndicatorCreate(config)   { _register('DigitalIndicator',   config); }
-export function DigitalRoundCreate(config)        { _register('DigitalRound',        config); }
-export function OnOffIndicatorCreate(config)      { _register('OnOffIndicator',      config); }
-export function PumpIndicatorCreate(config)       { _register('PumpIndicator',       config); }
-export function GasBurnerIndicatorCreate(config)  { _register('GasBurnerIndicator',  config); }
-export function GasFlapIndicatorCreate(config)    { _register('GasFlapIndicator',    config); }
-export function TempIndicatorCreate(config)       { _register('TempIndicator',       config); }
-
 export function updateIndicatorPosition(ind_id, bgId, top, left) {
   for (const key of Object.keys(_registry)) {
     const ind = _registry[key];
@@ -69,8 +59,14 @@ export function getIndicator(ind_id) {
 
 export function getRegistry() { return { ..._registry }; }
 
-export function buildValuesFromApiData(dataArray = []) {
+export function buildValuesFromApiData(indicators) {
+  if (!indicators || typeof indicators !== 'object') return {};
+  // Object format from API: { "te_1-1": 103, "pe_1-1": 52, ... }
+  if (!Array.isArray(indicators)) return { ...indicators };
+  // Legacy array format: [{ind_id, value}, ...]
   const map = {};
-  dataArray.forEach(({ ind_id, value }) => { map[ind_id] = value !== undefined ? value : null; });
+  indicators.forEach(({ ind_id, value }) => {
+    map[ind_id] = value !== undefined ? value : null;
+  });
   return map;
 }

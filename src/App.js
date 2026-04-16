@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './App.css';
 
 import {
-  apiLogin, apiReadData, apiGetSettings, apiSaveSettings,
+  apiLogin, apiReadData, apiGetSettings,
   apiGetUsers,
 } from './api';
 import { loadSettings, saveSettings, mergeApiSettings } from './settingsManager';
@@ -26,7 +26,7 @@ function clearSession() { sessionStorage.removeItem(SESSION_KEY); }
 
 function buildBackgrounds(screens) {
   return (screens || [])
-    .filter((s) => s.type === 'indicators' && s.background)
+    .filter((s) => s.type === 'indicators' && s.background && s.background !== 'default')
     .map((s) => ({
       id:              s.background.replace(/\.[^.]+$/, ''),
       label:           s.tab_header || s.name,
@@ -67,7 +67,12 @@ export default function App() {
     const result = await apiLogin(username, password);
     if (result.ok) {
       loadFromAuthScreens(result.screens);
-      const s = { token: result.token, user: result.user, role: result.role?.name || 'operator', screens: result.screens };
+      const s = {
+        token:   result.token,
+        user:    result.user,
+        role:    result.role?.role_name || result.role?.name || 'operator',
+        screens: result.screens,
+      };
       saveSession(s);
       setSession(s);
       const bgs = buildBackgrounds(result.screens);
@@ -88,23 +93,29 @@ export default function App() {
 
   const processPollData = useCallback((response, currentSettings) => {
     if (!response) return;
-    const { hdr = {}, indicators = [] } = response;
+    const { hdr = {}, indicators = {} } = response;
+
     setFooterStatus({ status: hdr.status ?? 0, text: hdr.status_text || '—' });
     setSensorValues(buildValuesFromApiData(indicators));
     setHasPolled(true);
-    if (indicators.length > 0) {
+
+    const entries = Object.entries(indicators);
+    if (entries.length > 0) {
       const sz    = currentSettings?.message_text_size    ?? 13;
       const color = currentSettings?.message_text_color   ?? '#7ec8e3';
       const lines = currentSettings?.message_window_lines ?? 20;
       const now   = new Date();
       const pad   = (n, w = 2) => String(n).padStart(w, '0');
       const stamp = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())} ${pad(now.getDate())}-${pad(now.getMonth()+1)}-${now.getFullYear()}`;
+
       setFooterMessages((prev) => [
         ...prev.slice(-(lines * 10)),
         { id: ++msgId.current, text: `Poll at ${stamp}`, color, size: sz },
-        ...indicators.slice(0, 8).map((item) => ({
-          id: ++msgId.current, text: `  · ${item.ind_id}: ${item.value ?? 'OFFLINE'}`,
-          color: '#445566', size: Math.max(10, sz - 1),
+        ...entries.slice(0, 8).map(([ind_id, value]) => ({
+          id:    ++msgId.current,
+          text:  `  · ${ind_id}: ${value ?? 'OFFLINE'}`,
+          color: '#445566',
+          size:  Math.max(10, sz - 1),
         })),
       ]);
     }
