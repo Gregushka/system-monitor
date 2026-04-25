@@ -28,6 +28,7 @@ export function loadFromAuthScreens(screens) {
           left:      ind.left     ?? 0,
           radius:    ind.radius   ?? undefined,
           size:      ind.size     ?? undefined,
+          direction: ind.direction ?? undefined,
           box:       ind.box      ?? undefined,
           aggregate: aggName,
           screen:    screen.name,
