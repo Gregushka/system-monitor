@@ -3,7 +3,7 @@ import './App.css';
 
 import {
   apiLogin, apiReadData, apiGetSettings,
-  apiGetUsers,
+  apiGetUsers, apiGetScreens,
 } from './api';
 import { loadSettings, saveSettings, mergeApiSettings } from './settingsManager';
 import { loadFromAuthScreens, buildValuesFromApiData } from './indicatorRegistry';
@@ -151,9 +151,17 @@ export default function App() {
     setPositionOverrides((prev) => ({ ...prev, [ind_id]: { top, left } }));
   }, []);
 
-  const handlePositionSaved = useCallback((ind_id) => {
+  const handlePositionSaved = useCallback(async (ind_id) => {
     setPositionOverrides((prev) => { const next = { ...prev }; delete next[ind_id]; return next; });
-  }, []);
+    const newScreens = await apiGetScreens(session?.token);
+    if (newScreens.length > 0) {
+      loadFromAuthScreens(newScreens);
+      const updated = { ...loadSession(), screens: newScreens };
+      saveSession(updated);
+      setSession(updated);
+      setBackgrounds(buildBackgrounds(newScreens));
+    }
+  }, [session]);
 
   const refreshUsers = useCallback(() => {
     apiGetUsers(session?.token).then(({ users, roles, groups }) => {
