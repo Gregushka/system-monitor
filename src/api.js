@@ -147,7 +147,7 @@ export async function apiDeleteGroup(token, groupId) {
 }
 
 export async function apiGetScreens(token) {
-  const { data, ok } = await apiFetch('screens', { token });
+  const { data, ok } = await apiFetch('screen', { token });
   return ok ? (data?.data?.screens || []) : [];
 }
 
