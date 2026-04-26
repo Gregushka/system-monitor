@@ -146,6 +146,11 @@ export async function apiDeleteGroup(token, groupId) {
   return { ok: ok && data?.status_code === 0, message: data?.message };
 }
 
+export async function apiGetScreens(token) {
+  const { data, ok } = await apiFetch('screens', { token });
+  return ok ? (data?.data?.screens || []) : [];
+}
+
 export async function apiSetPosition(token, indId, { ind_id, screen, aggregate, top, left }) {
   const { data, ok } = await apiFetch(`position/${encodeURIComponent(indId)}`, {
     method: 'POST', token, body: { ind_id, screen, aggregate, top, left },
