@@ -5,12 +5,13 @@ import './css/PumpIndicator.css';
  * PumpIndicator  –  P&ID centrifugal pump symbol
  *
  * Registry config fields:
- *   ind_id  {string}
- *   bg_id   {string}
- *   label   {string}
- *   top     {number}  0–2000
- *   left    {number}  0–2000
- *   size    {number}  SVG diameter px (default 80)
+ *   ind_id     {string}
+ *   bg_id      {string}
+ *   label      {string}
+ *   top        {number}  0–2000
+ *   left       {number}  0–2000
+ *   size       {number}  SVG diameter px (default 80)
+ *   direction  {number}  Rotation in degrees: 0/360/null = up (default), 90 = right, 180 = down, 270 = left
  *
  * Value from API:
  *   "grey"  / 0  →  offline / stopped
@@ -45,7 +46,7 @@ function resolveState(value) {
 }
 
 export default function PumpIndicator({ config, value }) {
-  const { label = 'Pump', size = 80 } = config;
+  const { label = 'Pump', size = 80, direction = 0 } = config;
   const stateName = resolveState(value);
   const s   = STATES[stateName];
   const cx  = size / 2;
@@ -57,7 +58,8 @@ export default function PumpIndicator({ config, value }) {
   const ty = cy - th * 0.44, by = ty + th;
   const tl = cx - tw / 2, tr2 = cx + tw / 2;
 
-  const dotR = size * 0.063;
+  const dotR    = size * 0.063;
+  const rotateDeg = direction == null ? 0 : direction;
 
   return (
     <div className="pump-wrap">
@@ -66,18 +68,20 @@ export default function PumpIndicator({ config, value }) {
         viewBox={`0 0 ${size} ${size}`}
         style={{ filter: s.glow !== 'none' ? `drop-shadow(${s.glow})` : 'none', transition: 'filter 0.4s' }}
       >
-        <circle cx={cx} cy={cy} r={r} fill={s.fill} stroke={s.border} strokeWidth="2.5" style={{ transition: 'fill 0.4s, stroke 0.4s' }} />
-        <polygon points={`${cx},${ty} ${tl},${by} ${tr2},${by}`} fill="#000" opacity="0.5" />
-        {/* Connection dots */}
-        <circle cx={cx} cy={3}        r={dotR} fill="#ff2222" stroke="#111" strokeWidth="1" />
-        <circle cx={cx} cy={size - 3} r={dotR} fill="#ff2222" stroke="#111" strokeWidth="1" />
-        {/* Offline X */}
-        {stateName === 'offline' && (
-          <g stroke="#445566" strokeWidth="2" strokeLinecap="round">
-            <line x1={cx - r*0.35} y1={cy - r*0.35} x2={cx + r*0.35} y2={cy + r*0.35} />
-            <line x1={cx + r*0.35} y1={cy - r*0.35} x2={cx - r*0.35} y2={cy + r*0.35} />
-          </g>
-        )}
+        <g transform={`rotate(${rotateDeg}, ${cx}, ${cy})`}>
+          <circle cx={cx} cy={cy} r={r} fill={s.fill} stroke={s.border} strokeWidth="2.5" style={{ transition: 'fill 0.4s, stroke 0.4s' }} />
+          <polygon points={`${cx},${ty} ${tl},${by} ${tr2},${by}`} fill="#000" opacity="0.5" />
+          {/* Connection dots */}
+          <circle cx={cx} cy={3}        r={dotR} fill="#ff2222" stroke="#111" strokeWidth="1" />
+          <circle cx={cx} cy={size - 3} r={dotR} fill="#ff2222" stroke="#111" strokeWidth="1" />
+          {/* Offline X */}
+          {stateName === 'offline' && (
+            <g stroke="#445566" strokeWidth="2" strokeLinecap="round">
+              <line x1={cx - r*0.35} y1={cy - r*0.35} x2={cx + r*0.35} y2={cy + r*0.35} />
+              <line x1={cx + r*0.35} y1={cy - r*0.35} x2={cx - r*0.35} y2={cy + r*0.35} />
+            </g>
+          )}
+        </g>
       </svg>
       <div className="pump-label">{label}</div>
       <div className={`pump-state pump-state--${stateName}`}>{s.label}</div>
